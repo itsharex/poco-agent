@@ -1,21 +1,27 @@
+import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
 
-from app.core.deps import get_current_user_id, require_internal_token
+from app.core.deps import get_current_user_id, get_db, require_internal_token
 from app.schemas.memory import (
+    MemoryCreateJobEnqueueResponse,
+    MemoryCreateJobResponse,
     MemoryConfigureRequest,
     MemoryCreateRequest,
     MemorySearchRequest,
     MemoryUpdateRequest,
 )
 from app.schemas.response import Response, ResponseSchema
+from app.services.memory_create_job_service import MemoryCreateJobService
 from app.services.memory_service import MemoryService
 
 router = APIRouter(prefix="/memories", tags=["memories"])
 
 memory_service = MemoryService()
+memory_create_job_service = MemoryCreateJobService(memory_service=memory_service)
 
 
 @router.post("/configure", response_model=ResponseSchema[dict[str, bool]])
@@ -30,13 +36,41 @@ async def configure_memory(
     )
 
 
-@router.post("", response_model=ResponseSchema[Any])
+@router.post("", response_model=ResponseSchema[MemoryCreateJobEnqueueResponse])
 async def create_memories(
     request: MemoryCreateRequest,
+    background_tasks: BackgroundTasks,
     user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
 ) -> JSONResponse:
-    result = memory_service.create_memories(user_id=user_id, request=request)
-    return Response.success(data=result, message="Memory stored successfully")
+    result = memory_create_job_service.enqueue_create(
+        db,
+        user_id=user_id,
+        request=request,
+    )
+    background_tasks.add_task(
+        memory_create_job_service.process_create_job,
+        result.job_id,
+    )
+    return Response.success(
+        data=result, message="Memory create job queued successfully"
+    )
+
+
+@router.get("/jobs/{job_id}", response_model=ResponseSchema[MemoryCreateJobResponse])
+async def get_memory_create_job(
+    job_id: uuid.UUID,
+    user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+) -> JSONResponse:
+    result = memory_create_job_service.get_job(
+        db,
+        user_id=user_id,
+        job_id=job_id,
+    )
+    return Response.success(
+        data=result, message="Memory create job retrieved successfully"
+    )
 
 
 @router.get("", response_model=ResponseSchema[Any])

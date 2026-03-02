@@ -1,3 +1,5 @@
+import uuid
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -39,3 +41,24 @@ class MemoryUpdateRequest(BaseModel):
         default=None,
         description="Optional metadata for update operations.",
     )
+
+
+class MemoryCreateJobEnqueueResponse(BaseModel):
+    """Response for enqueueing a memory creation job."""
+
+    job_id: uuid.UUID
+    status: str
+
+
+class MemoryCreateJobResponse(BaseModel):
+    """Status response for a memory creation job."""
+
+    job_id: uuid.UUID
+    status: str
+    progress: int = 0
+    result: Any | None = None
+    error: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    started_at: datetime | None = None
+    finished_at: datetime | None = None

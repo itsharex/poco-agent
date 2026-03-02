@@ -4,6 +4,8 @@ from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
 
 from app.schemas.memory import (
+    MemoryCreateJobEnqueueResponse,
+    MemoryCreateJobResponse,
     MemoryCreateRequest,
     MemorySearchRequest,
     MemoryUpdateRequest,
@@ -16,11 +18,27 @@ router = APIRouter(prefix="/memories", tags=["memories"])
 backend_client = BackendClient()
 
 
-@router.post("", response_model=ResponseSchema[Any])
+@router.post("", response_model=ResponseSchema[MemoryCreateJobEnqueueResponse])
 async def create_memories(request: MemoryCreateRequest) -> JSONResponse:
     payload = request.model_dump(mode="json", exclude={"session_id"})
     result = await backend_client.create_memory(request.session_id, payload)
-    return Response.success(data=result, message="Memory stored successfully")
+    return Response.success(
+        data=result, message="Memory create job queued successfully"
+    )
+
+
+@router.get("/jobs/{job_id}", response_model=ResponseSchema[MemoryCreateJobResponse])
+async def get_memory_create_job(
+    job_id: str,
+    session_id: str = Query(...),
+) -> JSONResponse:
+    result = await backend_client.get_memory_create_job(
+        session_id=session_id,
+        job_id=job_id,
+    )
+    return Response.success(
+        data=result, message="Memory create job retrieved successfully"
+    )
 
 
 @router.get("", response_model=ResponseSchema[Any])

@@ -294,6 +294,21 @@ class BackendClient:
             data = response.json()
             return data.get("data")
 
+    async def get_memory_create_job(self, session_id: str, job_id: str) -> Any:
+        """Get memory create job status via backend internal API."""
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.base_url}/api/v1/internal/memories/jobs/{job_id}",
+                params={"session_id": session_id},
+                headers={
+                    "X-Internal-Token": self.settings.internal_api_token,
+                    **self._trace_headers(),
+                },
+            )
+            response.raise_for_status()
+            data = response.json()
+            return data.get("data")
+
     async def list_memories(self, session_id: str) -> Any:
         """List memories via backend internal API."""
         async with httpx.AsyncClient() as client:

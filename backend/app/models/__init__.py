@@ -7,6 +7,7 @@ from app.models.agent_session import AgentSession
 from app.models.claude_md import UserClaudeMdSetting
 from app.models.env_var import UserEnvVar
 from app.models.mcp_server import McpServer
+from app.models.memory_create_job import MemoryCreateJob
 from app.models.plugin import Plugin
 from app.models.plugin_import_job import PluginImportJob
 from app.models.project import Project
@@ -31,6 +32,7 @@ __all__ = [
     "UserClaudeMdSetting",
     "UserEnvVar",
     "McpServer",
+    "MemoryCreateJob",
     "Plugin",
     "PluginImportJob",
     "Project",
