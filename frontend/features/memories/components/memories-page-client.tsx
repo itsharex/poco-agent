@@ -1,20 +1,13 @@
 "use client";
 
 import * as React from "react";
-import {
-  Brain,
-  Pencil,
-  Plus,
-  RefreshCw,
-  Save,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { Brain, Plus, Trash2 } from "lucide-react";
 
 import { PageHeaderShell } from "@/components/shared/page-header-shell";
 import { HeaderSearchInput } from "@/components/shared/header-search-input";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { SkeletonShimmer } from "@/components/ui/skeleton-shimmer";
 import { StaggeredList } from "@/components/ui/staggered-entrance";
@@ -92,7 +85,7 @@ export function MemoriesPageClient() {
     setEditingMemoryText("");
   };
 
-  const handleCloseEditDialog = () => {
+  const handleCancelEdit = () => {
     setEditingMemoryId(null);
     setEditingMemoryText("");
   };
@@ -110,33 +103,20 @@ export function MemoriesPageClient() {
         })}
       </span>
       <div className="flex flex-1 flex-nowrap items-center justify-end gap-2 overflow-x-auto">
-        <Button
-          variant="ghost"
-          className="gap-2"
-          onClick={() => void store.refresh()}
-          disabled={store.isMutating || store.isLoading}
-        >
-          <RefreshCw className="size-4" />
-          {t("memories.actions.showAll", "Show All")}
-        </Button>
         <HeaderSearchInput
           value={searchQuery}
           onChange={setSearchQuery}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              void handleSearch();
+            }
+          }}
           placeholder={t(
             "memories.search.queryPlaceholder",
             "Search memories...",
           )}
           className="w-full md:w-72"
         />
-        <Button
-          variant="outline"
-          className="gap-2"
-          onClick={() => void handleSearch()}
-          disabled={store.isMutating || !searchQuery.trim()}
-        >
-          <Search className="size-4" />
-          {t("memories.actions.search", "Search")}
-        </Button>
       </div>
     </div>
   );
@@ -159,18 +139,6 @@ export function MemoriesPageClient() {
               </p>
             </div>
           </div>
-        }
-        right={
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-2"
-            onClick={() => void store.refresh()}
-            disabled={store.isMutating || store.isLoading}
-          >
-            <RefreshCw className="size-4" />
-            {t("memories.actions.refresh", "Refresh")}
-          </Button>
         }
       />
 
@@ -222,35 +190,43 @@ export function MemoriesPageClient() {
                     staggerDelay={40}
                     duration={320}
                     renderItem={(item) => {
+                      const isEditing = editingMemoryId === item.id;
                       return (
                         <div className="group flex min-h-[72px] items-center gap-3 rounded-xl border border-border/70 bg-card px-4 py-3">
                           <div className="min-w-0 flex-1">
-                            <button
-                              type="button"
-                              className="w-full truncate whitespace-nowrap rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-left text-base text-foreground transition-colors hover:border-border/90 hover:bg-muted/30"
-                              onClick={() =>
-                                handleStartEdit(item.id, item.text)
-                              }
-                              disabled={store.isMutating}
-                              aria-label={t("memories.actions.edit", "Edit")}
-                            >
-                              {item.text}
-                            </button>
+                            {isEditing ? (
+                              <Input
+                                autoFocus
+                                value={editingMemoryText}
+                                onChange={(e) =>
+                                  setEditingMemoryText(e.target.value)
+                                }
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    void handleSaveEditedMemory();
+                                  } else if (e.key === "Escape") {
+                                    handleCancelEdit();
+                                  }
+                                }}
+                                className="h-10 text-base"
+                                disabled={store.isMutating}
+                              />
+                            ) : (
+                              <button
+                                type="button"
+                                className="w-full truncate whitespace-nowrap rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-left text-base text-foreground transition-colors hover:border-border/90 hover:bg-muted/30"
+                                onClick={() =>
+                                  handleStartEdit(item.id, item.text)
+                                }
+                                disabled={store.isMutating}
+                                aria-label={t("memories.actions.edit", "Edit")}
+                              >
+                                {item.text}
+                              </button>
+                            )}
                           </div>
 
                           <div className="flex shrink-0 items-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8 text-muted-foreground hover:text-foreground"
-                              onClick={() =>
-                                handleStartEdit(item.id, item.text)
-                              }
-                              disabled={store.isMutating}
-                              title={t("memories.actions.edit", "Edit")}
-                            >
-                              <Pencil className="size-4" />
-                            </Button>
                             <Button
                               variant="ghost"
                               size="icon"
@@ -312,49 +288,6 @@ export function MemoriesPageClient() {
             placeholder={t(
               "memories.create.contentPlaceholder",
               "Type memory content",
-            )}
-            className="min-h-32"
-          />
-        </CapabilityDialogContent>
-      </Dialog>
-
-      <Dialog
-        open={Boolean(editingMemoryId)}
-        onOpenChange={(open) => !open && handleCloseEditDialog()}
-      >
-        <CapabilityDialogContent
-          title={t("memories.edit.title", "Edit Memory")}
-          size="sm"
-          maxHeight="34dvh"
-          desktopMaxHeight="34dvh"
-          bodyClassName="space-y-4 px-6 pt-4 pb-6"
-          footer={
-            <DialogFooter className="grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                onClick={handleCloseEditDialog}
-                disabled={store.isMutating}
-                className="w-full"
-              >
-                {t("common.cancel", "Cancel")}
-              </Button>
-              <Button
-                className="w-full gap-2"
-                onClick={() => void handleSaveEditedMemory()}
-                disabled={store.isMutating || !editingMemoryText.trim()}
-              >
-                <Save className="size-4" />
-                {t("memories.actions.update", "Save")}
-              </Button>
-            </DialogFooter>
-          }
-        >
-          <Textarea
-            value={editingMemoryText}
-            onChange={(event) => setEditingMemoryText(event.target.value)}
-            placeholder={t(
-              "memories.edit.contentPlaceholder",
-              "Update memory content",
             )}
             className="min-h-32"
           />

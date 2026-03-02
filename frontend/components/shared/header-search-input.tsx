@@ -5,11 +5,12 @@ import { useT } from "@/lib/i18n/client";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-interface HeaderSearchInputProps {
+interface HeaderSearchInputProps extends Omit<
+  React.ComponentPropsWithoutRef<typeof Input>,
+  "onChange" | "value"
+> {
   value: string;
   onChange: (value: string) => void;
-  placeholder?: string;
-  className?: string;
 }
 
 export function HeaderSearchInput({
@@ -17,6 +18,7 @@ export function HeaderSearchInput({
   onChange,
   placeholder,
   className,
+  ...props
 }: HeaderSearchInputProps) {
   const { t } = useT("translation");
 
@@ -29,6 +31,7 @@ export function HeaderSearchInput({
         className="w-full bg-background/50 pl-9 border-border/50 focus-visible:bg-background transition-colors"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        {...props}
       />
     </div>
   );
