@@ -10,6 +10,7 @@ import {
   Search,
   Sparkles,
   Clock,
+  Brain,
   Command,
 } from "lucide-react";
 
@@ -32,18 +33,33 @@ import {
 // ---------------------------------------------------------------------------
 
 const TOP_NAV_ITEMS = [
-  { id: "search", labelKey: "sidebar.search", icon: Search, href: null },
+  {
+    id: "search",
+    labelKey: "sidebar.search",
+    defaultLabel: "Search",
+    icon: Search,
+    href: null,
+  },
   {
     id: "capabilities",
     labelKey: "sidebar.library",
+    defaultLabel: "Capabilities",
     icon: Sparkles,
     href: "/capabilities",
   },
   {
     id: "scheduled-tasks",
     labelKey: "sidebar.scheduledTasks",
+    defaultLabel: "Scheduled Tasks",
     icon: Clock,
     href: "/capabilities/scheduled-tasks",
+  },
+  {
+    id: "memories",
+    labelKey: "sidebar.memories",
+    defaultLabel: "Memories",
+    icon: Brain,
+    href: "/memories",
   },
 ] as const;
 
@@ -54,6 +70,8 @@ const ICON_ANIMATIONS: Record<string, string> = {
     "transition-all duration-300 group-hover/menu-item:rotate-12 group-hover/menu-item:scale-110",
   "scheduled-tasks":
     "transition-transform duration-500 group-hover/menu-item:rotate-[360deg]",
+  memories:
+    "transition-transform duration-300 group-hover/menu-item:scale-110 group-hover/menu-item:rotate-6",
 };
 
 // ---------------------------------------------------------------------------
@@ -143,7 +161,7 @@ export function SidebarHeaderSection({
       </SidebarMenu>
 
       {/* Navigation items */}
-      {TOP_NAV_ITEMS.map(({ id, labelKey, icon: Icon, href }) => {
+      {TOP_NAV_ITEMS.map(({ id, labelKey, defaultLabel, icon: Icon, href }) => {
         const isSearch = id === "search";
         const iconAnimation = ICON_ANIMATIONS[id] ?? "";
 
@@ -168,11 +186,11 @@ export function SidebarHeaderSection({
                 className={cn(
                   "h-[36px] min-w-0 max-w-[calc(var(--sidebar-width)-16px)] w-full justify-start gap-3 rounded-[10px] px-3 py-[7.5px] text-muted-foreground transition-colors hover:bg-sidebar-accent focus-visible:ring-0 focus-visible:outline-none group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)] group-data-[collapsible=icon]:max-w-[var(--sidebar-width-icon)] group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0",
                 )}
-                tooltip={t(labelKey)}
+                tooltip={t(labelKey, defaultLabel)}
               >
                 <Icon className={cn("size-4 shrink-0", iconAnimation)} />
                 <span className="text-sm truncate group-data-[collapsible=icon]:hidden">
-                  {t(labelKey)}
+                  {t(labelKey, defaultLabel)}
                 </span>
                 {id === "search" && (
                   <KbdGroup className="ml-auto opacity-70 group-data-[collapsible=icon]:hidden">

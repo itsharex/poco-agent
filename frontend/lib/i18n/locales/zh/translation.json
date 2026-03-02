@@ -9,6 +9,7 @@
     "library": "能力",
     "openMain": "打开主侧边栏",
     "scheduledTasks": "定时任务",
+    "memories": "记忆",
     "projects": "项目",
     "newProject": "新建项目",
     "newProjectPrompt": "请输入项目名称：",
@@ -363,6 +364,16 @@
         "listMcpResources": "列出 MCP 资源",
         "readMcpResource": "读取 MCP 资源",
         "browser": "浏览器",
+        "memory": "记忆",
+        "memoryCreate": "写入记忆",
+        "memoryCreateConversation": "从对话写入记忆",
+        "memoryList": "查看记忆",
+        "memorySearch": "搜索记忆",
+        "memoryGet": "查看记忆详情",
+        "memoryUpdate": "更新记忆",
+        "memoryHistory": "查看记忆历史",
+        "memoryDelete": "删除记忆",
+        "memoryDeleteAll": "清空记忆",
         "tool": "工具"
       },
       "summary": {
@@ -1677,6 +1688,49 @@
   },
   "filesidebar": {
     "title": "文件列表"
+  },
+  "memories": {
+    "title": "记忆",
+    "subtitle": "管理用户级长期记忆条目。",
+    "stats": {
+      "count": "{{count}} 条"
+    },
+    "actions": {
+      "search": "搜索",
+      "showAll": "显示全部",
+      "refresh": "刷新",
+      "edit": "编辑",
+      "update": "保存",
+      "delete": "删除",
+      "create": "创建"
+    },
+    "search": {
+      "queryPlaceholder": "搜索记忆..."
+    },
+    "create": {
+      "title": "新增记忆",
+      "desc": "输入你希望 Poco 记住的信息。",
+      "contentPlaceholder": "输入想让 Poco 记住的内容"
+    },
+    "edit": {
+      "title": "编辑记忆",
+      "contentPlaceholder": "修改记忆内容"
+    },
+    "fields": {
+      "updatedAt": "更新时间",
+      "createdAt": "创建时间"
+    },
+    "list": {
+      "empty": "暂无记忆。"
+    },
+    "toasts": {
+      "invalidJson": "JSON 格式不正确",
+      "error": "操作失败",
+      "created": "记忆已创建",
+      "updated": "记忆已更新",
+      "deleted": "记忆已删除",
+      "cleared": "已清空全部记忆"
+    }
   },
   "onboarding": {
     "close": "关闭教程",

@@ -23,6 +23,7 @@ import {
   History,
   ListChecks,
   Database,
+  Brain,
   AppWindow,
   Server,
 } from "lucide-react";
@@ -53,10 +54,15 @@ type ToolStepPair = {
 };
 
 const POCO_PLAYWRIGHT_MCP_PREFIX = "mcp____poco_playwright__";
+const POCO_MEMORY_MCP_PREFIX = "mcp____poco_memory__";
 
 type BrowserToolMeta = {
   action: string;
   summary: string | null;
+};
+
+type MemoryToolMeta = {
+  action: string;
 };
 
 type McpToolMeta = {
@@ -87,6 +93,18 @@ const TOOL_NAME_TRANSLATION_KEY_MAP: Record<string, string> = {
   exitplanmode: "exitPlanMode",
   listmcpresources: "listMcpResources",
   readmcpresource: "readMcpResource",
+};
+
+const MEMORY_TOOL_ACTION_TRANSLATION_KEY_MAP: Record<string, string> = {
+  memory_create: "memoryCreate",
+  memory_create_conversation: "memoryCreateConversation",
+  memory_list: "memoryList",
+  memory_search: "memorySearch",
+  memory_get: "memoryGet",
+  memory_update: "memoryUpdate",
+  memory_history: "memoryHistory",
+  memory_delete: "memoryDelete",
+  memory_delete_all: "memoryDeleteAll",
 };
 
 function parseJsonLike(value: unknown): unknown {
@@ -150,6 +168,7 @@ function getGenericMcpToolMeta(toolName: string): McpToolMeta | null {
   const trimmed = toolName.trim();
   if (!trimmed.startsWith("mcp__")) return null;
   if (trimmed.startsWith(POCO_PLAYWRIGHT_MCP_PREFIX)) return null;
+  if (trimmed.startsWith(POCO_MEMORY_MCP_PREFIX)) return null;
 
   const body = trimmed.slice("mcp__".length);
   if (!body) return null;
@@ -165,6 +184,15 @@ function getGenericMcpToolMeta(toolName: string): McpToolMeta | null {
     server: server || "mcp",
     action: action || null,
   };
+}
+
+function getMemoryToolMeta(toolUse: ToolUseBlock): MemoryToolMeta | null {
+  if (!toolUse.name.startsWith(POCO_MEMORY_MCP_PREFIX)) return null;
+
+  const action = toolUse.name.slice(POCO_MEMORY_MCP_PREFIX.length).trim();
+  if (!action) return null;
+
+  return { action };
 }
 
 function getBrowserToolMeta(toolUse: ToolUseBlock): BrowserToolMeta | null {
@@ -225,6 +253,9 @@ function getSkillToolMeta(toolUse: ToolUseBlock): SkillToolMeta | null {
 function renderToolIcon(toolName: string): React.ReactNode {
   if (toolName.startsWith(POCO_PLAYWRIGHT_MCP_PREFIX)) {
     return <AppWindow className="size-3.5 text-muted-foreground" />;
+  }
+  if (toolName.startsWith(POCO_MEMORY_MCP_PREFIX)) {
+    return <Brain className="size-3.5 text-muted-foreground" />;
   }
   if (getGenericMcpToolMeta(toolName)) {
     return <Server className="size-3.5 text-muted-foreground" />;
@@ -305,6 +336,7 @@ function ToolStep({ toolUse, toolResult, isOpen, onToggle }: ToolStepProps) {
     () => getBrowserToolMeta(toolUse),
     [toolUse],
   );
+  const memoryMeta = React.useMemo(() => getMemoryToolMeta(toolUse), [toolUse]);
   const mcpMeta = React.useMemo(
     () => getGenericMcpToolMeta(toolUse.name || ""),
     [toolUse.name],
@@ -314,6 +346,15 @@ function ToolStep({ toolUse, toolResult, isOpen, onToggle }: ToolStepProps) {
     if (browserMeta) {
       const action = browserMeta.action.replaceAll("_", " ");
       return `${t("chat.statusBar.browser")}（${action}）`;
+    }
+    if (memoryMeta) {
+      const normalizedAction = memoryMeta.action.trim().toLowerCase();
+      const translationKey =
+        MEMORY_TOOL_ACTION_TRANSLATION_KEY_MAP[normalizedAction];
+      const actionLabel = translationKey
+        ? t(`chat.toolCards.tools.${translationKey}`).trim()
+        : memoryMeta.action.replaceAll("_", " ");
+      return actionLabel;
     }
     if (mcpMeta) {
       if (mcpMeta.action) {
@@ -334,7 +375,7 @@ function ToolStep({ toolUse, toolResult, isOpen, onToggle }: ToolStepProps) {
       return t(`chat.toolCards.tools.${translationKey}`).trim();
     }
     return (toolUse.name || t("chat.toolCards.tools.tool")).trim();
-  }, [browserMeta, mcpMeta, skillMeta, t, toolUse.name]);
+  }, [browserMeta, mcpMeta, memoryMeta, skillMeta, t, toolUse.name]);
   const detailIcon = isOpen ? (
     <ChevronDown className="size-3.5 text-muted-foreground" />
   ) : (

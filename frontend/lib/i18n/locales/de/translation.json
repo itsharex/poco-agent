@@ -362,6 +362,16 @@
         "listMcpResources": "MCP-Ressourcen auflisten",
         "readMcpResource": "MCP-Ressource lesen",
         "browser": "Browser",
+        "memory": "Memory",
+        "memoryCreate": "Save memory",
+        "memoryCreateConversation": "Save memory from conversation",
+        "memoryList": "View memories",
+        "memorySearch": "Search memories",
+        "memoryGet": "View memory",
+        "memoryUpdate": "Update memory",
+        "memoryHistory": "View memory history",
+        "memoryDelete": "Delete memory",
+        "memoryDeleteAll": "Delete all memories",
         "tool": "Werkzeug"
       },
       "summary": {

@@ -9,6 +9,7 @@
     "library": "Capabilities",
     "openMain": "Open main sidebar",
     "scheduledTasks": "Scheduled Tasks",
+    "memories": "Memories",
     "projects": "Projects",
     "newProject": "New Project",
     "newProjectPrompt": "Enter project name:",
@@ -363,6 +364,16 @@
         "listMcpResources": "List MCP resources",
         "readMcpResource": "Read MCP resource",
         "browser": "Browser",
+        "memory": "Memory",
+        "memoryCreate": "Save memory",
+        "memoryCreateConversation": "Save memory from conversation",
+        "memoryList": "View memories",
+        "memorySearch": "Search memories",
+        "memoryGet": "View memory",
+        "memoryUpdate": "Update memory",
+        "memoryHistory": "View memory history",
+        "memoryDelete": "Delete memory",
+        "memoryDeleteAll": "Delete all memories",
         "tool": "Tool"
       },
       "summary": {
@@ -1677,6 +1688,49 @@
   },
   "filesidebar": {
     "title": "File List"
+  },
+  "memories": {
+    "title": "Memories",
+    "subtitle": "Manage user-level long-term memory entries.",
+    "stats": {
+      "count": "{{count}} items"
+    },
+    "actions": {
+      "search": "Search",
+      "showAll": "Show All",
+      "refresh": "Refresh",
+      "edit": "Edit",
+      "update": "Save",
+      "delete": "Delete",
+      "create": "Create"
+    },
+    "search": {
+      "queryPlaceholder": "Search memories..."
+    },
+    "create": {
+      "title": "Add Memory",
+      "desc": "Type what you want Poco to remember.",
+      "contentPlaceholder": "Type what Poco should remember"
+    },
+    "edit": {
+      "title": "Edit Memory",
+      "contentPlaceholder": "Update memory content"
+    },
+    "fields": {
+      "updatedAt": "Updated",
+      "createdAt": "Created"
+    },
+    "list": {
+      "empty": "No memories found."
+    },
+    "toasts": {
+      "invalidJson": "Invalid JSON",
+      "error": "Operation failed",
+      "created": "Memory created",
+      "updated": "Memory updated",
+      "deleted": "Memory deleted",
+      "cleared": "All memories cleared"
+    }
   },
   "onboarding": {
     "close": "Close tutorial",
