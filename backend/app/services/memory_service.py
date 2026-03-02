@@ -83,6 +83,7 @@ class MemoryService:
         embedder_config: dict[str, Any] = {
             "api_key": api_key,
             "model": self.settings.mem0_embedder_model,
+            "embedding_dims": self.settings.mem0_embedding_dims,
         }
         if openai_base_url is not None:
             llm_config["openai_base_url"] = openai_base_url

@@ -92,7 +92,7 @@ class Settings(BaseSettings):
     mem0_embedder_model: str = Field(
         default="text-embedding-3-small", alias="MEM0_EMBEDDER_MODEL"
     )
-    mem0_embedding_dims: int = Field(default=1536, alias="MEM0_EMBEDDING_DIMS")
+    mem0_embedding_dims: int = Field(default=1024, alias="MEM0_EMBEDDING_DIMS")
     mem0_history_db_path: str = Field(
         default="/tmp/poco/memory/history.db", alias="MEM0_HISTORY_DB_PATH"
     )
