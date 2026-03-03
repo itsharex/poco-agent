@@ -5,4 +5,5 @@
 export interface ModelConfigResponse {
   default_model: string;
   model_list: string[];
+  mem0_enabled?: boolean;
 }

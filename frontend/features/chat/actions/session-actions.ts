@@ -31,6 +31,7 @@ const configSchema = z
     git_token_env_key: z.string().optional().nullable(),
     model: z.string().optional().nullable(),
     browser_enabled: z.boolean().optional(),
+    memory_enabled: z.boolean().optional(),
     mcp_config: z.record(z.string(), z.boolean()).optional(),
     skill_config: z.record(z.string(), z.boolean()).optional(),
     plugin_config: z.record(z.string(), z.boolean()).optional(),

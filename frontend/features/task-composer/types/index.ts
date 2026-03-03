@@ -13,6 +13,7 @@ export interface TaskSendOptions {
   repo_usage?: RepoUsageMode | null;
   project_name?: string | null;
   browser_enabled?: boolean | null;
+  memory_enabled?: boolean | null;
   run_schedule?: {
     schedule_mode: RunScheduleMode;
     timezone: string;

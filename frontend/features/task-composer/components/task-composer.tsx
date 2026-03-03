@@ -16,6 +16,7 @@ import { SlashAutocompleteDropdown } from "@/features/task-composer/components/s
 import { getNextComposerMode } from "@/features/task-composer/lib/mode-utils";
 import { useSlashCommandAutocomplete } from "@/features/chat/hooks/use-slash-command-autocomplete";
 import { useAppShell } from "@/components/shell/app-shell-context";
+import { useMemoryFeatureEnabled } from "@/hooks/use-memory-feature-enabled";
 import { useFileDropUpload } from "@/features/task-composer/hooks/use-file-drop-upload";
 import { useFileUpload } from "@/features/task-composer/hooks/use-file-upload";
 import type { RunScheduleMode } from "@/features/task-composer/model/run-schedule";
@@ -76,6 +77,7 @@ export function TaskComposer({
 }: TaskComposerProps) {
   const { t } = useT("translation");
   const { lng } = useAppShell();
+  const memoryFeatureEnabled = useMemoryFeatureEnabled();
   const isComposing = React.useRef(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -95,6 +97,7 @@ export function TaskComposer({
 
   // ---- Browser toggle ----
   const [browserEnabled, setBrowserEnabled] = React.useState(true);
+  const [memoryEnabled, setMemoryEnabled] = React.useState(false);
 
   // ---- Repo state ----
   const [repoDialogOpen, setRepoDialogOpen] = React.useState(false);
@@ -151,6 +154,11 @@ export function TaskComposer({
       // Keep UTC as fallback
     }
   }, []);
+
+  React.useEffect(() => {
+    if (memoryFeatureEnabled) return;
+    setMemoryEnabled(false);
+  }, [memoryFeatureEnabled]);
 
   // Default scheduled name from input
   React.useEffect(() => {
@@ -217,6 +225,7 @@ export function TaskComposer({
           ? projectName.trim() || null
           : null,
       browser_enabled: browserEnabled,
+      memory_enabled: memoryFeatureEnabled ? memoryEnabled : false,
       run_schedule:
         mode === "scheduled"
           ? null
@@ -251,6 +260,8 @@ export function TaskComposer({
     gitBranch,
     gitTokenEnvKey,
     isSubmitting,
+    memoryEnabled,
+    memoryFeatureEnabled,
     mode,
     onSend,
     projectName,
@@ -412,8 +423,11 @@ export function TaskComposer({
               isUploading={upload.isUploading}
               canSubmit={canSubmit}
               browserEnabled={browserEnabled}
+              memoryEnabled={memoryEnabled}
+              showMemoryToggle={memoryFeatureEnabled}
               onOpenRepoDialog={() => setRepoDialogOpen(true)}
               onBrowserEnabledChange={setBrowserEnabled}
+              onMemoryEnabledChange={setMemoryEnabled}
               onOpenFileInput={() => fileInputRef.current?.click()}
               onSubmit={handleSubmit}
               scheduledSummary={

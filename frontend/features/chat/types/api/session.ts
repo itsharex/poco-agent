@@ -147,6 +147,8 @@ export interface TaskConfig {
   model?: string | null;
   /** Built-in browser capability toggle (Playwright MCP is injected internally). */
   browser_enabled?: boolean;
+  /** Built-in memory capability toggle (Memory MCP is injected internally). */
+  memory_enabled?: boolean;
   /** MCP server enable/disable toggles (true=enabled, false=disabled).
    *  Servers not in this object use their default enabled state from user installations.
    */

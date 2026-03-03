@@ -16,6 +16,7 @@ import {
 
 import { useT } from "@/lib/i18n/client";
 import { useLanguage } from "@/hooks/use-language";
+import { useMemoryFeatureEnabled } from "@/hooks/use-memory-feature-enabled";
 import { useMobileSidebar } from "@/hooks/use-mobile-sidebar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -90,6 +91,7 @@ export function SidebarHeaderSection({
   const { t } = useT("translation");
   const router = useRouter();
   const lng = useLanguage();
+  const memoryFeatureEnabled = useMemoryFeatureEnabled();
   const { toggleSidebar } = useSidebar();
   const { closeMobileSidebar } = useMobileSidebar();
   const isMacPlatform = React.useMemo(() => {
@@ -162,6 +164,10 @@ export function SidebarHeaderSection({
 
       {/* Navigation items */}
       {TOP_NAV_ITEMS.map(({ id, labelKey, defaultLabel, icon: Icon, href }) => {
+        if (id === "memories" && !memoryFeatureEnabled) {
+          return null;
+        }
+
         const isSearch = id === "search";
         const iconAnimation = ICON_ANIMATIONS[id] ?? "";
 

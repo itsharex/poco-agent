@@ -8,6 +8,7 @@ import {
   Settings2,
   Clock,
   Chrome,
+  Brain,
   Paperclip,
   Code2,
   SquareTerminal,
@@ -50,8 +51,11 @@ interface ComposerToolbarProps {
   isUploading: boolean;
   canSubmit: boolean;
   browserEnabled: boolean;
+  memoryEnabled: boolean;
+  showMemoryToggle: boolean;
   onOpenRepoDialog: () => void;
   onBrowserEnabledChange: (enabled: boolean) => void;
+  onMemoryEnabledChange: (enabled: boolean) => void;
   onOpenFileInput: () => void;
   onSubmit: () => void;
   scheduledSummary?: string;
@@ -70,8 +74,11 @@ export function ComposerToolbar({
   isUploading,
   canSubmit,
   browserEnabled,
+  memoryEnabled,
+  showMemoryToggle,
   onOpenRepoDialog,
   onBrowserEnabledChange,
+  onMemoryEnabledChange,
   onOpenFileInput,
   onSubmit,
   scheduledSummary,
@@ -173,6 +180,17 @@ export function ComposerToolbar({
                 <Chrome className="size-4" />
                 <span>{t("hero.browser.toggle")}</span>
               </DropdownMenuCheckboxItem>
+              {showMemoryToggle ? (
+                <DropdownMenuCheckboxItem
+                  checked={memoryEnabled}
+                  onCheckedChange={(next) => {
+                    onMemoryEnabledChange(Boolean(next));
+                  }}
+                >
+                  <Brain className="size-4" />
+                  <span>{t("chat.toolNameMap.memory")}</span>
+                </DropdownMenuCheckboxItem>
+              ) : null}
             </DropdownMenuContent>
           </DropdownMenu>
           <TooltipContent side="top" sideOffset={8}>

@@ -56,6 +56,7 @@ export interface ConfigSnapshot {
   skill_ids?: number[];
   plugin_ids?: number[];
   browser_enabled?: boolean;
+  memory_enabled?: boolean;
   model?: string;
   repo_url?: string;
   git_branch?: string;

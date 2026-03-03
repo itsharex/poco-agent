@@ -91,6 +91,8 @@ export function parseConfigSnapshot(
       typeof raw.browser_enabled === "boolean"
         ? raw.browser_enabled
         : undefined,
+    memory_enabled:
+      typeof raw.memory_enabled === "boolean" ? raw.memory_enabled : undefined,
     repo_url: isNonEmptyString(raw.repo_url) ? raw.repo_url.trim() : undefined,
     git_branch: isNonEmptyString(raw.git_branch)
       ? raw.git_branch.trim()

@@ -38,6 +38,9 @@ function buildTaskConfig(
   if (options.browser_enabled) {
     config.browser_enabled = true;
   }
+  if (options.memory_enabled) {
+    config.memory_enabled = true;
+  }
 
   return Object.keys(config).length > 0 ? config : undefined;
 }
