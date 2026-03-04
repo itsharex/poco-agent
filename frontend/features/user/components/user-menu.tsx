@@ -58,7 +58,7 @@ export function UserMenu({ trigger, onOpenSettings }: UserMenuProps) {
         variant="ghost"
         size="sm"
         className="justify-start h-8 font-normal px-2"
-        onClick={() => window.open("https://open-cowork.com", "_blank")}
+        onClick={() => window.open("https://poco-ai.com", "_blank")}
       >
         <Home className="mr-2 size-4" />
         {t("userMenu.home")}

@@ -151,8 +151,8 @@ export const AVAILABLE_CONNECTORS: Connector[] = [
     descriptionKey: "connectors.webSearch.description",
     icon: ConnectorIcons.search,
     author: "Poco",
-    website: "https://open-cowork.com",
-    privacyPolicy: "https://open-cowork.com/privacy",
+    website: "https://poco-ai.com",
+    privacyPolicy: "https://poco-ai.com/privacy",
   },
   {
     id: "code-interpreter",
@@ -161,7 +161,7 @@ export const AVAILABLE_CONNECTORS: Connector[] = [
     descriptionKey: "connectors.codeInterpreter.description",
     icon: ConnectorIcons.zapier, // Reuse command icon
     author: "Poco",
-    website: "https://open-cowork.com",
-    privacyPolicy: "https://open-cowork.com/privacy",
+    website: "https://poco-ai.com",
+    privacyPolicy: "https://poco-ai.com/privacy",
   },
 ];
