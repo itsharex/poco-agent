@@ -1,13 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const LOGO_GIF = "/logo.gif";
 const FALLBACK_LOGO = "/logo.svg";
 
-export function LaunchScreen() {
+interface LaunchScreenProps {
+  onAnimationComplete?: () => void;
+  gifDuration?: number; // GIF animation duration in ms
+}
+
+export function LaunchScreen({
+  onAnimationComplete,
+  gifDuration = 3000,
+}: LaunchScreenProps) {
   const [logo, setLogo] = useState(LOGO_GIF);
   const [hasError, setHasError] = useState(false);
+  const completedRef = useRef(false);
 
   const handleImageError = () => {
     if (!hasError) {
@@ -16,23 +25,27 @@ export function LaunchScreen() {
     }
   };
 
-  const handleImageLoad = () => {
-    // After GIF loads and plays once, replace with static logo
-    const gifDuration = 3000; // Adjust based on your GIF duration
-    setTimeout(() => {
-      setLogo(FALLBACK_LOGO);
+  // Ensure callback is triggered after GIF duration
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!completedRef.current) {
+        completedRef.current = true;
+        onAnimationComplete?.();
+      }
     }, gifDuration);
-  };
+
+    return () => clearTimeout(timer);
+  }, [gifDuration, onAnimationComplete]);
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-background px-6 py-8 text-foreground">
       <div className="relative h-48 w-48 overflow-hidden rounded-full sm:h-65 sm:w-65">
+        {/* eslint-disable-next-line @next/next/no-img-element -- Using native img for proper GIF animation handling */}
         <img
           src={logo}
           alt="Poco avatar"
           className="h-full w-full object-cover"
           onError={handleImageError}
-          onLoad={handleImageLoad}
         />
       </div>
 

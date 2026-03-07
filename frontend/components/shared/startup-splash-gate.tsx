@@ -1,33 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { LaunchScreen } from "@/components/shared/launch-screen";
 import { startStartupPreload } from "@/lib/startup-preload";
 
-const MIN_SPLASH_DURATION_MS = 1000;
+const GIF_DURATION_MS = 2500; // Adjust based on your GIF duration
 
 export function StartupSplashGate({ children }: { children: React.ReactNode }) {
-  const [ready, setReady] = useState(false);
+  const [preloadDone, setPreloadDone] = useState(false);
+  const [gifDone, setGifDone] = useState(false);
 
+  // Start preload in parallel
   useEffect(() => {
     let active = true;
-    const minDuration = new Promise<void>((resolve) => {
-      window.setTimeout(resolve, MIN_SPLASH_DURATION_MS);
-    });
-
-    Promise.all([minDuration, startStartupPreload()]).finally(() => {
+    (async () => {
+      await startStartupPreload();
       if (active) {
-        setReady(true);
+        setPreloadDone(true);
       }
-    });
-
+    })();
     return () => {
       active = false;
     };
   }, []);
 
+  const handleGifComplete = useCallback(() => {
+    setGifDone(true);
+  }, []);
+
+  // Derive ready state from preload and gif completion
+  const ready = useMemo(() => preloadDone && gifDone, [preloadDone, gifDone]);
+
   if (!ready) {
-    return <LaunchScreen />;
+    return (
+      <LaunchScreen
+        onAnimationComplete={handleGifComplete}
+        gifDuration={GIF_DURATION_MS}
+      />
+    );
   }
 
   return <>{children}</>;
