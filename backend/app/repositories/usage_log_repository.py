@@ -16,6 +16,12 @@ class UsageLogRepository:
         run_id: uuid.UUID | None = None,
         total_cost_usd: float | None = None,
         duration_ms: int | None = None,
+        input_tokens: int | None = None,
+        output_tokens: int | None = None,
+        cache_creation_input_tokens: int | None = None,
+        cache_read_input_tokens: int | None = None,
+        total_tokens: int | None = None,
+        include_in_user_analytics: bool = True,
         usage_json: dict[str, Any] | None = None,
     ) -> UsageLog:
         """Creates a new usage log."""
@@ -24,6 +30,12 @@ class UsageLogRepository:
             run_id=run_id,
             total_cost_usd=total_cost_usd,
             duration_ms=duration_ms,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            cache_creation_input_tokens=cache_creation_input_tokens,
+            cache_read_input_tokens=cache_read_input_tokens,
+            total_tokens=total_tokens,
+            include_in_user_analytics=include_in_user_analytics,
             usage_json=usage_json,
         )
         session_db.add(usage_log)
@@ -36,30 +48,40 @@ class UsageLogRepository:
 
     @staticmethod
     def list_by_session(
-        session_db: Session, session_id: uuid.UUID, limit: int = 100, offset: int = 0
+        session_db: Session,
+        session_id: uuid.UUID,
+        limit: int | None = None,
+        offset: int = 0,
     ) -> list[UsageLog]:
         """Lists usage logs for a session."""
-        return (
+        query = (
             session_db.query(UsageLog)
             .filter(UsageLog.session_id == session_id)
             .order_by(UsageLog.created_at.asc())
-            .limit(limit)
-            .offset(offset)
-            .all()
         )
+        if offset > 0:
+            query = query.offset(offset)
+        if limit is not None:
+            query = query.limit(limit)
+        return query.all()
 
     @staticmethod
     def list_by_run(
-        session_db: Session, run_id: uuid.UUID, limit: int = 100, offset: int = 0
+        session_db: Session,
+        run_id: uuid.UUID,
+        limit: int | None = None,
+        offset: int = 0,
     ) -> list[UsageLog]:
-        return (
+        query = (
             session_db.query(UsageLog)
             .filter(UsageLog.run_id == run_id)
             .order_by(UsageLog.created_at.asc())
-            .limit(limit)
-            .offset(offset)
-            .all()
         )
+        if offset > 0:
+            query = query.offset(offset)
+        if limit is not None:
+            query = query.limit(limit)
+        return query.all()
 
     @staticmethod
     def list_by_run_ids(

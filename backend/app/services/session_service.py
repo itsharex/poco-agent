@@ -431,6 +431,12 @@ class SessionService:
                     else None
                 ),
                 duration_ms=source_log.duration_ms,
+                input_tokens=source_log.input_tokens,
+                output_tokens=source_log.output_tokens,
+                cache_creation_input_tokens=source_log.cache_creation_input_tokens,
+                cache_read_input_tokens=source_log.cache_read_input_tokens,
+                total_tokens=source_log.total_tokens,
+                include_in_user_analytics=False,
                 usage_json=self._deepcopy_json(source_log.usage_json),
             )
 

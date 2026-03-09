@@ -6,6 +6,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.models.agent_run import AgentRun
+from app.models.agent_session import AgentSession
 from app.repositories.scheduled_task_repository import ScheduledTaskRepository
 from app.repositories.message_repository import MessageRepository
 from app.repositories.tool_execution_repository import ToolExecutionRepository
@@ -17,6 +18,7 @@ from app.schemas.callback import (
 )
 from app.schemas.session import SessionUpdateRequest
 from app.services.session_service import SessionService
+from app.utils.usage import normalize_usage_payload
 
 logger = logging.getLogger(__name__)
 
@@ -184,7 +186,7 @@ class CallbackService:
                 )
 
     def _extract_and_persist_usage(
-        self, db: Session, session_id: uuid.UUID, message: dict[str, Any]
+        self, db: Session, db_session: AgentSession, message: dict[str, Any]
     ) -> None:
         """Extracts and persists usage data from a ResultMessage."""
         message_type = message.get("_type", "")
@@ -194,15 +196,16 @@ class CallbackService:
 
         usage_data = message.get("usage")
         if not usage_data or not isinstance(usage_data, dict):
-            logger.debug(f"No usage data in ResultMessage for session {session_id}")
+            logger.debug(f"No usage data in ResultMessage for session {db_session.id}")
             return
 
         total_cost_usd = message.get("total_cost_usd")
         duration_ms = message.get("duration_ms")
+        normalized_usage = normalize_usage_payload(usage_data)
 
         db_run = (
             db.query(AgentRun)
-            .filter(AgentRun.session_id == session_id)
+            .filter(AgentRun.session_id == db_session.id)
             .filter(AgentRun.status.in_(["claimed", "running"]))
             .order_by(AgentRun.created_at.desc())
             .first()
@@ -210,10 +213,16 @@ class CallbackService:
 
         UsageLogRepository.create(
             session_db=db,
-            session_id=session_id,
+            session_id=db_session.id,
             run_id=db_run.id if db_run else None,
             total_cost_usd=total_cost_usd,
             duration_ms=duration_ms,
+            input_tokens=normalized_usage["input_tokens"],
+            output_tokens=normalized_usage["output_tokens"],
+            cache_creation_input_tokens=normalized_usage["cache_creation_input_tokens"],
+            cache_read_input_tokens=normalized_usage["cache_read_input_tokens"],
+            total_tokens=normalized_usage["total_tokens"],
+            include_in_user_analytics=True,
             usage_json=usage_data,
         )
         db.commit()
@@ -224,7 +233,7 @@ class CallbackService:
         logger.info(
             "usage_log_persisted",
             extra={
-                "session_id": str(session_id),
+                "session_id": str(db_session.id),
                 "run_id": str(db_run.id) if db_run else None,
                 "cost_usd": total_cost_usd,
                 "input_tokens": input_tokens,
@@ -358,7 +367,7 @@ class CallbackService:
         if callback.new_message:
             self._persist_message_and_tools(db, db_session.id, callback.new_message)
             # Extract and persist usage data if this is a ResultMessage
-            self._extract_and_persist_usage(db, db_session.id, callback.new_message)
+            self._extract_and_persist_usage(db, db_session, callback.new_message)
 
         db_run = (
             db.query(AgentRun)
