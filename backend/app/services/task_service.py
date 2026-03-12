@@ -249,7 +249,7 @@ class TaskService:
                 )
 
         db_session = None
-        unfinished_run = None
+        blocking_run = None
         if request.session_id:
             db_session = SessionRepository.get_by_id_for_update(db, request.session_id)
             if not db_session:
@@ -277,8 +277,8 @@ class TaskService:
                 if existing_response is not None:
                     return existing_response
 
-                unfinished_run = RunRepository.get_unfinished_by_session(db, db_session.id)
-                if unfinished_run is not None:
+                blocking_run = RunRepository.get_blocking_by_session(db, db_session.id)
+                if blocking_run is not None:
                     base_config = session_queue_service.get_effective_base_config(
                         db, db_session
                     )
@@ -313,7 +313,7 @@ class TaskService:
             ]
         run_config_snapshot = run_config_snapshot or None
 
-        if unfinished_run is not None and schedule_mode == "immediate" and db_session is not None:
+        if blocking_run is not None and schedule_mode == "immediate" and db_session is not None:
             item = session_queue_service.enqueue(
                 db,
                 db_session=db_session,

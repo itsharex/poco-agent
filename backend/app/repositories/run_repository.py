@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import exists, select, update
+from sqlalchemy import and_, case, exists, or_, select, update
 from sqlalchemy.orm import Session, aliased
 
 from app.models.agent_run import AgentRun
@@ -10,6 +10,17 @@ from app.models.agent_session import AgentSession
 
 class RunRepository:
     """Data access layer for agent runs."""
+
+    UNFINISHED_STATUSES = ("queued", "claimed", "running")
+    BLOCKING_STATUSES = ("claimed", "running")
+
+    @staticmethod
+    def _blocking_priority():
+        return case(
+            (AgentRun.status == "running", 0),
+            (AgentRun.status == "claimed", 1),
+            else_=2,
+        )
 
     @staticmethod
     def create(
@@ -59,8 +70,40 @@ class RunRepository:
         return (
             session_db.query(AgentRun)
             .filter(AgentRun.session_id == session_id)
-            .filter(AgentRun.status.in_(["queued", "claimed", "running"]))
-            .order_by(AgentRun.created_at.desc())
+            .filter(AgentRun.status.in_(RunRepository.UNFINISHED_STATUSES))
+            .order_by(
+                RunRepository._blocking_priority().asc(),
+                AgentRun.scheduled_at.asc(),
+                AgentRun.created_at.asc(),
+            )
+            .first()
+        )
+
+    @staticmethod
+    def get_blocking_by_session(
+        session_db: Session,
+        session_id: uuid.UUID,
+        *,
+        now: datetime | None = None,
+    ) -> AgentRun | None:
+        current_time = now or datetime.now(timezone.utc)
+        return (
+            session_db.query(AgentRun)
+            .filter(AgentRun.session_id == session_id)
+            .filter(
+                or_(
+                    AgentRun.status.in_(RunRepository.BLOCKING_STATUSES),
+                    and_(
+                        AgentRun.status == "queued",
+                        AgentRun.scheduled_at <= current_time,
+                    ),
+                )
+            )
+            .order_by(
+                RunRepository._blocking_priority().asc(),
+                AgentRun.scheduled_at.asc(),
+                AgentRun.created_at.asc(),
+            )
             .first()
         )
 
@@ -68,13 +111,7 @@ class RunRepository:
     def get_latest_active_by_session(
         session_db: Session, session_id: uuid.UUID
     ) -> AgentRun | None:
-        return (
-            session_db.query(AgentRun)
-            .filter(AgentRun.session_id == session_id)
-            .filter(AgentRun.status.in_(["queued", "claimed", "running"]))
-            .order_by(AgentRun.created_at.desc())
-            .first()
-        )
+        return RunRepository.get_blocking_by_session(session_db, session_id)
 
     @staticmethod
     def list_by_session(

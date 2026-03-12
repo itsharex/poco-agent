@@ -228,7 +228,7 @@ class SessionQueueService:
     def promote_next_if_available(
         self, db: Session, db_session: AgentSession
     ) -> AgentRun | None:
-        if RunRepository.get_unfinished_by_session(db, db_session.id):
+        if RunRepository.get_blocking_by_session(db, db_session.id):
             return None
         item = SessionQueueItemRepository.get_head_for_update(db, db_session.id)
         if not item:
@@ -316,8 +316,8 @@ class SessionQueueService:
 
         item.status = "queued"
 
-        unfinished_run = RunRepository.get_unfinished_by_session(db, db_session.id)
-        if unfinished_run is not None:
+        blocking_run = RunRepository.get_blocking_by_session(db, db_session.id)
+        if blocking_run is not None:
             self._move_item_to_front(
                 db,
                 session_id=db_session.id,

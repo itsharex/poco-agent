@@ -82,12 +82,50 @@ class CallbackService:
             return False
         if callback.new_message is not None:
             return False
-
-        export_status = (callback.workspace_export_status or "").strip().lower()
-        if not export_status or export_status == "pending":
+        if not self._is_final_workspace_export(callback):
             return False
 
         return True
+
+    def _is_final_workspace_export(self, callback: AgentCallbackRequest) -> bool:
+        export_status = (callback.workspace_export_status or "").strip().lower()
+        return bool(export_status) and export_status != "pending"
+
+    def _should_apply_workspace_export(
+        self,
+        db: Session,
+        db_session: AgentSession,
+        db_run: AgentRun | None,
+        callback: AgentCallbackRequest,
+    ) -> bool:
+        has_workspace_export_payload = any(
+            value is not None
+            for value in (
+                callback.workspace_files_prefix,
+                callback.workspace_manifest_key,
+                callback.workspace_archive_key,
+                callback.workspace_export_status,
+            )
+        )
+        if not has_workspace_export_payload:
+            return True
+        if db_run is None:
+            return True
+
+        latest_run = RunRepository.get_latest_by_session(db, db_session.id)
+        if latest_run is None or latest_run.id == db_run.id:
+            return True
+
+        logger.info(
+            "skip_stale_workspace_export",
+            extra={
+                "session_id": str(db_session.id),
+                "run_id": str(db_run.id),
+                "latest_run_id": str(latest_run.id),
+                "workspace_export_status": callback.workspace_export_status,
+            },
+        )
+        return False
 
     def _extract_sdk_session_id_from_message(
         self, message: dict[str, Any]
@@ -317,14 +355,21 @@ class CallbackService:
 
         if callback.state_patch is not None:
             db_session.state_patch = callback.state_patch.model_dump(mode="json")
-        if callback.workspace_files_prefix is not None:
-            db_session.workspace_files_prefix = callback.workspace_files_prefix
-        if callback.workspace_manifest_key is not None:
-            db_session.workspace_manifest_key = callback.workspace_manifest_key
-        if callback.workspace_archive_key is not None:
-            db_session.workspace_archive_key = callback.workspace_archive_key
-        if callback.workspace_export_status is not None:
-            db_session.workspace_export_status = callback.workspace_export_status
+        should_apply_workspace_export = self._should_apply_workspace_export(
+            db,
+            db_session,
+            db_run,
+            callback,
+        )
+        if should_apply_workspace_export:
+            if callback.workspace_files_prefix is not None:
+                db_session.workspace_files_prefix = callback.workspace_files_prefix
+            if callback.workspace_manifest_key is not None:
+                db_session.workspace_manifest_key = callback.workspace_manifest_key
+            if callback.workspace_archive_key is not None:
+                db_session.workspace_archive_key = callback.workspace_archive_key
+            if callback.workspace_export_status is not None:
+                db_session.workspace_export_status = callback.workspace_export_status
 
         if db_run is not None:
             db_run.progress = int(callback.progress or 0)
@@ -350,8 +395,8 @@ class CallbackService:
                 db_session.status = callback.status.value
 
         if callback.status == CallbackStatus.COMPLETED:
-            unfinished_run = RunRepository.get_unfinished_by_session(db, db_session.id)
-            if unfinished_run is None and self._session_queue.has_active_items(db, db_session.id):
+            blocking_run = RunRepository.get_blocking_by_session(db, db_session.id)
+            if blocking_run is None and self._session_queue.has_active_items(db, db_session.id):
                 promoted_run = self._session_queue.promote_next_if_available(db, db_session)
                 if promoted_run is not None:
                     db_session.status = "pending"
