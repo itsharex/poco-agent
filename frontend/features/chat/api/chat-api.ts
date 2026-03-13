@@ -212,17 +212,16 @@ export const chatService = {
     modelProviderId?: string | null,
     attachments?: InputFile[],
   ): Promise<TaskEnqueueResponse> => {
-    const hasModelOverride = model !== undefined;
-    const normalizedModel =
-      model === null ? null : (model || "").trim() || null;
+    const normalizedModel = (model || "").trim() || undefined;
     const normalizedModelProviderId =
-      modelProviderId === null ? null : (modelProviderId || "").trim() || null;
+      (modelProviderId || "").trim() || undefined;
+    const hasModelOverride = Boolean(normalizedModel);
     const hasAttachments = (attachments?.length ?? 0) > 0;
     const config: TaskConfig | undefined =
       hasModelOverride || hasAttachments
         ? {
             ...(hasModelOverride ? { model: normalizedModel } : {}),
-            ...(hasModelOverride
+            ...(hasModelOverride && normalizedModelProviderId
               ? { model_provider_id: normalizedModelProviderId }
               : {}),
             ...(hasAttachments ? { input_files: attachments } : {}),

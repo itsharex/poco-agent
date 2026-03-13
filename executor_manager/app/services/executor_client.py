@@ -1,3 +1,5 @@
+import logging
+
 import httpx
 
 from app.core.settings import get_settings
@@ -7,6 +9,8 @@ from app.core.observability.request_context import (
     get_request_id,
     get_trace_id,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ExecutorClient:
@@ -48,6 +52,34 @@ class ExecutorClient:
             callback_base_url: Base URL for callback-related APIs
             sdk_session_id: Claude SDK session ID for resuming conversations
         """
+        env_overrides = config.get("env_overrides") if isinstance(config, dict) else None
+        logger.warning(
+            "MODEL_EXECUTOR_CLIENT_REQUEST"
+            " executor_url=%s"
+            " session_id=%s"
+            " run_id=%s"
+            " model=%s"
+            " model_provider_id=%s"
+            " env_override_keys=%s"
+            " anthropic_base_url=%s"
+            " has_anthropic_api_key=%s"
+            " default_model=%s"
+            " permission_mode=%s",
+            executor_url,
+            session_id,
+            run_id,
+            config.get("model") if isinstance(config, dict) else None,
+            config.get("model_provider_id") if isinstance(config, dict) else None,
+            sorted(env_overrides.keys()) if isinstance(env_overrides, dict) else [],
+            env_overrides.get("ANTHROPIC_BASE_URL")
+            if isinstance(env_overrides, dict)
+            else None,
+            bool(env_overrides.get("ANTHROPIC_API_KEY"))
+            if isinstance(env_overrides, dict)
+            else False,
+            config.get("default_model") if isinstance(config, dict) else None,
+            permission_mode,
+        )
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{executor_url}/v1/tasks/execute",

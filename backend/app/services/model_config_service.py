@@ -31,6 +31,8 @@ class ProviderSpec:
     base_url_env_key: str
     default_base_url: str
     known_models: tuple[tuple[str, str], ...] = ()
+    legacy_api_key_env_keys: tuple[str, ...] = ()
+    legacy_base_url_env_keys: tuple[str, ...] = ()
 
 
 PROVIDER_SPECS: tuple[ProviderSpec, ...] = (
@@ -61,7 +63,7 @@ PROVIDER_SPECS: tuple[ProviderSpec, ...] = (
         display_name="GLM",
         api_key_env_key="GLM_API_KEY",
         base_url_env_key="GLM_BASE_URL",
-        default_base_url="https://open.bigmodel.cn/api/paas/v4/",
+        default_base_url="https://open.bigmodel.cn/api/anthropic",
         known_models=(
             ("GLM-4.7", "GLM-4.7"),
             ("glm-5", "GLM-5"),
@@ -72,7 +74,7 @@ PROVIDER_SPECS: tuple[ProviderSpec, ...] = (
         display_name="MiniMax",
         api_key_env_key="MINIMAX_API_KEY",
         base_url_env_key="MINIMAX_BASE_URL",
-        default_base_url="https://api.minimaxi.com/v1",
+        default_base_url="https://api.minimaxi.com/anthropic",
         known_models=(
             ("MiniMax-M2.5", "MiniMax M2.5"),
             ("MiniMax-M2", "MiniMax M2"),
@@ -83,7 +85,7 @@ PROVIDER_SPECS: tuple[ProviderSpec, ...] = (
         display_name="DeepSeek",
         api_key_env_key="DEEPSEEK_API_KEY",
         base_url_env_key="DEEPSEEK_BASE_URL",
-        default_base_url="https://api.deepseek.com",
+        default_base_url="https://api.deepseek.com/anthropic",
         known_models=(
             ("deepseek-chat", "DeepSeek Chat"),
             ("deepseek-reasoner", "DeepSeek Reasoner"),
@@ -180,6 +182,22 @@ def _build_model_definition(
         display_name=humanize_model_name(model_id),
         provider_id=provider_id,
     )
+
+
+def _first_non_empty(mapping: dict[str, str], keys: tuple[str, ...]) -> str:
+    for key in keys:
+        value = (mapping.get(key) or "").strip()
+        if value:
+            return value
+    return ""
+
+
+def _first_non_empty_process_env(keys: tuple[str, ...]) -> str:
+    for key in keys:
+        value = (os.getenv(key) or "").strip()
+        if value:
+            return value
+    return ""
 
 
 class ModelConfigService:
@@ -293,19 +311,22 @@ class ModelConfigService:
         system_env_values: dict[str, str],
         selected_model_ids: list[str],
     ) -> ModelProviderResponse:
-        user_key = user_env_values.get(spec.api_key_env_key, "")
-        process_key = (os.getenv(spec.api_key_env_key) or "").strip()
+        api_key_candidates = (spec.api_key_env_key, *spec.legacy_api_key_env_keys)
+        base_url_candidates = (spec.base_url_env_key, *spec.legacy_base_url_env_keys)
+
+        user_key = _first_non_empty(user_env_values, api_key_candidates)
+        process_key = _first_non_empty_process_env(api_key_candidates)
 
         if user_key:
             credential_state = "user"
-        elif system_env_values.get(spec.api_key_env_key, "") or process_key:
+        elif _first_non_empty(system_env_values, api_key_candidates) or process_key:
             credential_state = "system"
         else:
             credential_state = "none"
 
-        user_base_url = user_env_values.get(spec.base_url_env_key, "")
-        system_base_url = system_env_values.get(spec.base_url_env_key, "")
-        process_base_url = (os.getenv(spec.base_url_env_key) or "").strip()
+        user_base_url = _first_non_empty(user_env_values, base_url_candidates)
+        system_base_url = _first_non_empty(system_env_values, base_url_candidates)
+        process_base_url = _first_non_empty_process_env(base_url_candidates)
 
         if user_base_url:
             effective_base_url = user_base_url
@@ -348,9 +369,12 @@ class ModelConfigService:
         db: Session,
         user_id: str,
     ) -> tuple[dict[str, str], dict[str, str]]:
-        relevant_env_keys = {
-            spec.api_key_env_key for spec in PROVIDER_SPECS
-        } | {spec.base_url_env_key for spec in PROVIDER_SPECS}
+        relevant_env_keys = set()
+        for spec in PROVIDER_SPECS:
+            relevant_env_keys.add(spec.api_key_env_key)
+            relevant_env_keys.update(spec.legacy_api_key_env_keys)
+            relevant_env_keys.add(spec.base_url_env_key)
+            relevant_env_keys.update(spec.legacy_base_url_env_keys)
 
         system_items = self._load_env_values(
             EnvVarRepository.list_by_user_and_scope(

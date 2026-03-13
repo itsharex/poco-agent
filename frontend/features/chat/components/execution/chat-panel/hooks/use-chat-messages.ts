@@ -524,8 +524,8 @@ export function useChatMessages({
           sessionId,
           content: normalizedContent,
           attachments,
-          model: modelSelection?.modelId ?? null,
-          model_provider_id: modelSelection?.providerId ?? null,
+          model: modelSelection?.modelId,
+          model_provider_id: modelSelection?.providerId,
         });
 
         // Refresh runs so multi-turn conversations only show real user inputs.

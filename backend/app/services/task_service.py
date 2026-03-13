@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
@@ -17,6 +18,8 @@ from app.repositories.user_skill_install_repository import UserSkillInstallRepos
 from app.schemas.session import TaskConfig
 from app.schemas.task import TaskEnqueueRequest, TaskEnqueueResponse
 from app.services.model_config_service import get_allowed_model_ids, infer_provider_id
+
+logger = logging.getLogger(__name__)
 
 
 class TaskService:
@@ -327,6 +330,30 @@ class TaskService:
             run_config_snapshot["input_files"] = [
                 f.model_dump(mode="json") for f in request.config.input_files
             ]
+
+        logger.warning(
+            "MODEL_BACKEND_CONFIG"
+            " session_id=%s"
+            " user_id=%s"
+            " incoming_model=%s"
+            " incoming_provider=%s"
+            " merged_model=%s"
+            " merged_provider=%s"
+            " session_snapshot_model=%s"
+            " session_snapshot_provider=%s"
+            " run_model=%s"
+            " run_provider=%s",
+            str(db_session.id),
+            user_id,
+            request.config.model if request.config else None,
+            request.config.model_provider_id if request.config else None,
+            merged_config.get("model") if merged_config else None,
+            merged_config.get("model_provider_id") if merged_config else None,
+            (db_session.config_snapshot or {}).get("model"),
+            (db_session.config_snapshot or {}).get("model_provider_id"),
+            run_config_snapshot.get("model"),
+            run_config_snapshot.get("model_provider_id"),
+        )
 
         schedule_mode, scheduled_at = self._resolve_schedule(request)
 

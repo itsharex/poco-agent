@@ -139,6 +139,12 @@ export async function createSessionAction(input: CreateSessionInput) {
 export async function sendMessageAction(input: SendMessageInput) {
   const { sessionId, content, attachments, model, model_provider_id } =
     sendMessageSchema.parse(input);
+
+  // 输出上述的信息
+  console.log(
+    `[sendMessageAction] sessionId=${sessionId}, model=${model}, provider=${model_provider_id}`,
+  );
+
   // Ensure we have a prompt if content is empty but attachments exist
   const finalContent =
     content.trim() || (attachments?.length ? "Uploaded files" : content);
