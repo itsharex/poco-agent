@@ -55,14 +55,16 @@ class AgentExecutor:
         session_id: str,
         hooks: list,
         sdk_session_id: str | None = None,
+        *,
+        run_id: str | None = None,
         user_input_client: UserInputClient | None = None,
         memory_client: MemoryClient | None = None,
-        *,
         request_id: str | None = None,
         trace_id: str | None = None,
     ):
         self.session_id = session_id
         self.sdk_session_id = sdk_session_id
+        self.run_id = run_id
         self.hooks = HookManager(hooks)
         self.user_input_client = user_input_client
         self.memory_client = memory_client
@@ -80,7 +82,11 @@ class AgentExecutor:
     ):
         # Initialize context early so we can always report failures via callbacks,
         # even if workspace preparation (e.g. repo clone) fails.
-        ctx = ExecutionContext(self.session_id, str(self.workspace.root_path))
+        ctx = ExecutionContext(
+            self.session_id,
+            str(self.workspace.root_path),
+            run_id=self.run_id,
+        )
         if config.browser_enabled:
             ctx.current_state.browser = BrowserState(enabled=True)
 
@@ -390,8 +396,7 @@ class AgentExecutor:
 
         return configs
 
-    @staticmethod
-    def _inject_playwright_mcp(mcp_servers: dict) -> dict:
+    def _inject_playwright_mcp(self, mcp_servers: dict) -> dict:
         """Inject built-in Playwright MCP (CDP mode) for browser-enabled tasks.
 
         This keeps the Playwright MCP concept/config hidden from end users: they only toggle `browser_enabled`, and the executor wires the MCP server internally.

@@ -3,6 +3,7 @@ from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+
 from app.schemas.callback import AgentCurrentState
 from app.schemas.input_file import InputFile
 
@@ -12,25 +13,13 @@ class TaskConfig(BaseModel):
 
     repo_url: str | None = None
     git_branch: str = "main"
-    # Optional env var key holding a GitHub token (e.g. "GITHUB_TOKEN").
     git_token_env_key: str | None = None
-    # Optional explicit model override for this session/run.
     model: str | None = None
-    # Built-in browser capability toggle (Playwright MCP is injected internally by the executor).
     browser_enabled: bool = False
-    # Built-in memory capability toggle (Memory MCP is injected internally by the executor).
     memory_enabled: bool = False
-    # MCP server enable/disable toggles (true=enabled, false=disabled).
-    # Servers not in this dict use their default enabled state from user installations.
     mcp_config: dict[str, bool] = Field(default_factory=dict)
-    # Skill enable/disable toggles (true=enabled, false=disabled).
-    # Skills not in this dict use their default enabled state from user installations.
     skill_config: dict[str, bool] = Field(default_factory=dict)
-    # Plugin enable/disable toggles (true=enabled, false=disabled).
-    # Plugins not in this dict use their default enabled state from user installations.
     plugin_config: dict[str, bool] = Field(default_factory=dict)
-    # Optional explicit subagent selection (by id). When omitted, backend resolves
-    # enabled subagents as defaults.
     subagent_ids: list[int] = Field(default_factory=list)
     input_files: list[InputFile] = Field(default_factory=list)
 
@@ -72,6 +61,8 @@ class SessionResponse(BaseModel):
     workspace_archive_url: str | None
     state_patch: AgentCurrentState | None = None
     workspace_export_status: str | None = None
+    queued_query_count: int = 0
+    next_queued_query_preview: str | None = None
     status: str
     created_at: datetime
     updated_at: datetime
@@ -86,6 +77,8 @@ class SessionStateResponse(BaseModel):
     status: str
     state_patch: AgentCurrentState | None = None
     workspace_export_status: str | None = None
+    queued_query_count: int = 0
+    next_queued_query_preview: str | None = None
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
@@ -103,6 +96,7 @@ class SessionCancelResponse(BaseModel):
     session_id: UUID
     status: str
     canceled_runs: int = 0
+    canceled_queued_queries: int = 0
     expired_user_input_requests: int = 0
     executor_cancelled: bool = False
 

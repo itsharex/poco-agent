@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import { sendMessageAction } from "@/features/chat/actions/session-actions";
+import {
+  sendMessageAction,
+  type TaskEnqueueActionResult,
+} from "@/features/chat/actions/session-actions";
 import {
   getMessageAttachmentsDeltaRawAction,
   getMessagesBaseDeltaRawAction,
@@ -27,7 +30,10 @@ interface UseChatMessagesReturn {
   isLoadingHistory: boolean;
   isTyping: boolean;
   showTypingIndicator: boolean;
-  sendMessage: (content: string, attachments?: InputFile[]) => Promise<void>;
+  sendMessage: (
+    content: string,
+    attachments?: InputFile[],
+  ) => Promise<TaskEnqueueActionResult | null>;
   beginOptimisticRegenerate: (assistantMessageId: number) => string;
   beginOptimisticEditMessage: (args: {
     userMessageId: number;
@@ -488,36 +494,57 @@ export function useChatMessages({
 
   // Send message and immediately fetch updated messages
   const sendMessage = useCallback(
-    async (content: string, attachments?: InputFile[]) => {
-      if (!session?.session_id) return;
+    async (
+      content: string,
+      attachments?: InputFile[],
+    ): Promise<TaskEnqueueActionResult | null> => {
+      if (!session?.session_id) return null;
 
       const normalizedContent = content.trim();
       const hasAttachments = (attachments?.length ?? 0) > 0;
-      if (!normalizedContent && !hasAttachments) return;
+      if (!normalizedContent && !hasAttachments) return null;
 
       const sessionId = session.session_id;
-      setIsTyping(true);
+      const shouldOptimisticallyRender =
+        session.status !== "running" && session.status !== "pending";
+      let optimisticMessageId: string | null = null;
 
-      // Create a new user message for instant UI update
-      const newMessage: ChatMessage = {
-        id: `msg-${Date.now()}`,
-        role: "user",
-        content: normalizedContent,
-        status: "sent",
-        timestamp: new Date().toISOString(),
-        attachments,
-      };
+      if (shouldOptimisticallyRender) {
+        const newMessage: ChatMessage = {
+          id: `msg-${Date.now()}`,
+          role: "user",
+          content: normalizedContent,
+          status: "sent",
+          timestamp: new Date().toISOString(),
+          attachments,
+        };
 
-      setMessages((prev) => [...prev, newMessage]);
+        optimisticMessageId = newMessage.id;
+        setIsTyping(true);
+        setMessages((prev) => [...prev, newMessage]);
+      }
 
       try {
-        await sendMessageAction({
+        const result = await sendMessageAction({
           sessionId,
           content: normalizedContent,
           attachments,
         });
 
-        // Refresh runs so multi-turn conversations only show real user inputs.
+        if (result.acceptedType !== "run") {
+          if (optimisticMessageId) {
+            setMessages((prev) =>
+              prev.filter((message) => message.id !== optimisticMessageId),
+            );
+            setIsTyping(false);
+          }
+          return result;
+        }
+
+        if (!shouldOptimisticallyRender) {
+          setIsTyping(true);
+        }
+
         await refreshRealUserMessageIds();
 
         const messageDelta = await fetchMessagesDelta(sessionId, {
@@ -533,9 +560,17 @@ export function useChatMessages({
             },
           );
         }
+
+        return result;
       } catch (error) {
         console.error("[Chat] Failed to send message or get reply:", error);
-        setIsTyping(false);
+        if (optimisticMessageId) {
+          setMessages((prev) =>
+            prev.filter((message) => message.id !== optimisticMessageId),
+          );
+          setIsTyping(false);
+        }
+        return null;
       }
     },
     [

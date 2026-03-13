@@ -18,7 +18,6 @@ class Settings(BaseSettings):
 
     # External service URLs
     backend_url: str = Field(default="http://localhost:8000")
-    executor_url: str = Field(default="http://localhost:8080")
     callback_base_url: str = Field(default="http://localhost:8001")
 
     # Scheduler configuration

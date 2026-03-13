@@ -11,6 +11,7 @@ from app.models.memory_create_job import MemoryCreateJob
 from app.models.plugin import Plugin
 from app.models.plugin_import_job import PluginImportJob
 from app.models.project import Project
+from app.models.session_queue_item import AgentSessionQueueItem
 from app.models.skill import Skill
 from app.models.skill_import_job import SkillImportJob
 from app.models.slash_command import SlashCommand
@@ -29,6 +30,7 @@ __all__ = [
     "AgentRun",
     "AgentScheduledTask",
     "AgentSession",
+    "AgentSessionQueueItem",
     "UserClaudeMdSetting",
     "UserEnvVar",
     "McpServer",

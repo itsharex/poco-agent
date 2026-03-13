@@ -13,6 +13,8 @@ import {
   Code2,
   SquareTerminal,
   ListTodo,
+  Mic,
+  MicOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +36,7 @@ import {
 import { useT } from "@/lib/i18n/client";
 import type { ComposerMode } from "@/features/task-composer/types";
 import { COMPOSER_MODE_SEQUENCE } from "@/features/task-composer/lib/mode-utils";
+import type { VoiceInputStatus } from "@/features/voice";
 
 const MODE_ICONS: Record<
   ComposerMode,
@@ -50,12 +53,15 @@ interface ComposerToolbarProps {
   isSubmitting?: boolean;
   isUploading: boolean;
   canSubmit: boolean;
+  hasVoiceSupport: boolean;
+  voiceStatus: VoiceInputStatus;
   repoUrl: string;
   repoDialogOpen: boolean;
   browserEnabled: boolean;
   onOpenRepoDialog: () => void;
   onBrowserEnabledChange: (enabled: boolean) => void;
   onOpenFileInput: () => void;
+  onToggleVoiceInput: () => void;
   onSubmit: () => void;
   scheduledSummary?: string;
   onOpenScheduledSettings?: () => void;
@@ -72,12 +78,15 @@ export function ComposerToolbar({
   isSubmitting,
   isUploading,
   canSubmit,
+  hasVoiceSupport,
+  voiceStatus,
   repoUrl,
   repoDialogOpen,
   browserEnabled,
   onOpenRepoDialog,
   onBrowserEnabledChange,
   onOpenFileInput,
+  onToggleVoiceInput,
   onSubmit,
   scheduledSummary,
   onOpenScheduledSettings,
@@ -262,9 +271,46 @@ export function ComposerToolbar({
           </TooltipContent>
         </Tooltip>
 
+        {hasVoiceSupport ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant={voiceStatus === "recording" ? "destructive" : "ghost"}
+                size="icon"
+                disabled={disabled || voiceStatus === "transcribing"}
+                className="size-9 rounded-xl"
+                aria-label={
+                  voiceStatus === "transcribing"
+                    ? t("hero.transcribingVoiceInput")
+                    : voiceStatus === "recording"
+                      ? t("hero.stopVoiceInput")
+                      : t("hero.startVoiceInput")
+                }
+                onClick={onToggleVoiceInput}
+              >
+                {voiceStatus === "transcribing" ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : voiceStatus === "recording" ? (
+                  <MicOff className="size-4" />
+                ) : (
+                  <Mic className="size-4" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={8}>
+              {voiceStatus === "transcribing"
+                ? t("hero.transcribingVoiceInput")
+                : voiceStatus === "recording"
+                  ? t("hero.stopVoiceInput")
+                  : t("hero.startVoiceInput")}
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
+
         <Button
           onClick={onSubmit}
-          disabled={!canSubmit || disabled}
+          disabled={!canSubmit || disabled || voiceStatus !== "idle"}
           size="icon"
           className="size-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
           title={t("hero.send")}
