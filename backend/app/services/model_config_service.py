@@ -48,17 +48,6 @@ PROVIDER_SPECS: tuple[ProviderSpec, ...] = (
         ),
     ),
     ProviderSpec(
-        provider_id="openai",
-        display_name="OpenAI",
-        api_key_env_key="OPENAI_API_KEY",
-        base_url_env_key="OPENAI_BASE_URL",
-        default_base_url="https://api.openai.com/v1",
-        known_models=(
-            ("gpt-4.1", "GPT-4.1"),
-            ("gpt-4.1-mini", "GPT-4.1 Mini"),
-        ),
-    ),
-    ProviderSpec(
         provider_id="glm",
         display_name="GLM",
         api_key_env_key="GLM_API_KEY",
@@ -109,8 +98,6 @@ def infer_provider_id(model_id: str) -> str | None:
     lowered = value.lower()
     if lowered.startswith("claude-"):
         return "anthropic"
-    if lowered.startswith(("gpt", "o1", "o3", "o4")):
-        return "openai"
     if lowered.startswith("glm-") or value.startswith("GLM-"):
         return "glm"
     if lowered.startswith("minimax-") or value.startswith("MiniMax-"):
@@ -143,7 +130,13 @@ def get_allowed_model_ids(settings: Settings | None = None) -> list[str]:
 
     def push(value: str | None) -> None:
         clean = (value or "").strip()
-        if not clean or clean in seen:
+        provider_id = infer_provider_id(clean)
+        if (
+            not clean
+            or clean in seen
+            or provider_id is None
+            or provider_id not in PROVIDER_SPEC_MAP
+        ):
             return
         seen.add(clean)
         ordered.append(clean)
@@ -214,7 +207,11 @@ class ModelConfigService:
         def push_model(model_id: str | None, provider_id: str | None = None) -> None:
             clean = (model_id or "").strip()
             resolved_provider_id = (provider_id or infer_provider_id(clean) or "").strip()
-            if not clean or not resolved_provider_id:
+            if (
+                not clean
+                or not resolved_provider_id
+                or resolved_provider_id not in PROVIDER_SPEC_MAP
+            ):
                 return
             key = (resolved_provider_id, clean)
             if key in seen_keys:
@@ -397,6 +394,7 @@ class ModelConfigService:
         return {
             setting.provider_id: _normalize_model_ids(setting.model_ids)
             for setting in settings
+            if setting.provider_id in PROVIDER_SPEC_MAP
         }
 
     def _load_env_values(

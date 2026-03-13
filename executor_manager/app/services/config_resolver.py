@@ -23,15 +23,6 @@ _PROVIDER_RUNTIME_SPECS = {
         "runtime_api_key_env_key": "ANTHROPIC_API_KEY",
         "runtime_base_url_env_key": "ANTHROPIC_BASE_URL",
     },
-    "openai": {
-        "source_api_key_env_keys": ("OPENAI_API_KEY",),
-        "source_base_url_env_keys": ("OPENAI_BASE_URL",),
-        "source_api_key_settings_fields": ("openai_api_key",),
-        "source_base_url_settings_fields": ("openai_base_url",),
-        "default_base_url": "https://api.openai.com/v1",
-        "runtime_api_key_env_key": "OPENAI_API_KEY",
-        "runtime_base_url_env_key": "OPENAI_BASE_URL",
-    },
     "glm": {
         "source_api_key_env_keys": ("GLM_API_KEY",),
         "source_base_url_env_keys": ("GLM_BASE_URL",),
@@ -369,8 +360,6 @@ class ConfigResolver:
         lowered = value.lower()
         if lowered.startswith("claude-"):
             return "anthropic"
-        if lowered.startswith(("gpt", "o1", "o3", "o4")):
-            return "openai"
         if lowered.startswith("glm-") or value.startswith("GLM-"):
             return "glm"
         if lowered.startswith("minimax-") or value.startswith("MiniMax-"):
