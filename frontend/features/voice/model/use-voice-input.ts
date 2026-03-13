@@ -34,7 +34,7 @@ function isVoiceInputSupported(): boolean {
   }
 
   return Boolean(
-    navigator.mediaDevices?.getUserMedia &&
+    typeof navigator.mediaDevices?.getUserMedia === "function" &&
     typeof MediaRecorder !== "undefined",
   );
 }
