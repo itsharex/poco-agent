@@ -6,7 +6,6 @@ import {
   Image as ImageIcon,
   Loader2,
   MessageSquare,
-  MoreHorizontal,
   PanelRightClose,
   PanelRightOpen,
   Quote,
@@ -30,9 +29,7 @@ import {
   cancelSessionAction,
   editMessageAndRegenerateAction,
   regenerateMessageAction,
-  renameSessionTitleAction,
 } from "@/features/chat/actions/session-actions";
-import { RenameTaskDialog, TaskActionsDropdown } from "@/features/projects";
 import type {
   ExecutionSession,
   InputFile,
@@ -55,7 +52,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLanguage } from "@/hooks/use-language";
-import { useAppShell } from "@/components/shell/app-shell-context";
 import { ModelSelector } from "@/features/chat/components/chat/model-selector";
 import { useModelCatalog } from "@/features/chat/hooks/use-model-catalog";
 import {
@@ -162,8 +158,6 @@ export function ChatPanel({
   const lng = useLanguage();
   const { t } = useT("translation");
   const { refreshTasks, touchTask } = useTaskHistoryContext();
-  const { projects, pinnedTaskIds, toggleTaskPin, moveTask, removeTask } =
-    useAppShell();
   const {
     modelConfig,
     modelOptions,
@@ -173,7 +167,6 @@ export function ChatPanel({
   });
   const [isCancelling, setIsCancelling] = React.useState(false);
   const [isExportingImage, setIsExportingImage] = React.useState(false);
-  const [isRenameDialogOpen, setIsRenameDialogOpen] = React.useState(false);
   const [branchingMessageId, setBranchingMessageId] = React.useState<
     string | null
   >(null);
@@ -507,45 +500,6 @@ export function ChatPanel({
       }
     },
     [submitUserInputAnswer],
-  );
-
-  const handleRename = React.useCallback(
-    async (newTitle: string) => {
-      if (!session?.session_id) return;
-      try {
-        await renameSessionTitleAction({
-          sessionId: session.session_id,
-          title: newTitle,
-        });
-        updateSession({ title: newTitle });
-        toast.success(t("task.toasts.renamed"));
-        await refreshTasks();
-      } catch (error) {
-        console.error("[ChatPanel] Failed to rename session title:", error);
-        toast.error(t("task.toasts.renameFailed"));
-      }
-    },
-    [refreshTasks, session?.session_id, t, updateSession],
-  );
-
-  const isCurrentSessionPinned = React.useMemo(() => {
-    if (!session?.session_id) return false;
-    return pinnedTaskIds.includes(session.session_id);
-  }, [pinnedTaskIds, session?.session_id]);
-
-  const handleMoveTaskToProject = React.useCallback(
-    async (taskId: string, projectId: string | null) => {
-      await moveTask(taskId, projectId);
-    },
-    [moveTask],
-  );
-
-  const handleDeleteTask = React.useCallback(
-    async (taskId: string) => {
-      await removeTask(taskId);
-      router.push(lng ? `/${lng}/home` : "/home");
-    },
-    [lng, removeTask, router],
   );
 
   const userPromptHistory = React.useMemo(
@@ -1096,24 +1050,6 @@ export function ChatPanel({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : null}
-                {session?.session_id ? (
-                  <TaskActionsDropdown
-                    taskId={session.session_id}
-                    isPinned={isCurrentSessionPinned}
-                    projects={projects}
-                    onTogglePin={toggleTaskPin}
-                    onRename={() => setIsRenameDialogOpen(true)}
-                    onMoveToProject={handleMoveTaskToProject}
-                    onDelete={handleDeleteTask}
-                  >
-                    <PanelHeaderAction
-                      title={t("sidebar.settings")}
-                      className="focus-visible:ring-0 data-[state=open]:bg-accent data-[state=open]:text-accent-foreground"
-                    >
-                      <MoreHorizontal className="size-4" />
-                    </PanelHeaderAction>
-                  </TaskActionsDropdown>
-                ) : null}
                 {onToggleRightPanel ? (
                   <PanelHeaderAction
                     onClick={onToggleRightPanel}
@@ -1265,13 +1201,6 @@ export function ChatPanel({
         disabled={!session?.session_id || hasActiveUserInput || isCancelling}
         history={userPromptHistory}
         className={isRightPanelCollapsed ? "px-[20%]" : undefined}
-      />
-
-      <RenameTaskDialog
-        open={isRenameDialogOpen}
-        onOpenChange={setIsRenameDialogOpen}
-        taskName={session?.title || ""}
-        onRename={handleRename}
       />
     </div>
   );
