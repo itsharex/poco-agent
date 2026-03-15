@@ -1062,7 +1062,11 @@
       },
       "scope": {
         "system": "System",
-        "user": "Benutzer"
+        "user": "Benutzer",
+        "builtin": "Integriert"
+      },
+      "source": {
+        "skillCreator": "Vom Agent erstellt"
       },
       "fields": {
         "id": "id",

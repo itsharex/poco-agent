@@ -114,6 +114,7 @@ export function SkillsGrid({
             renderItem={(skill) => {
               const install = installBySkillId.get(skill.id);
               const isBuiltin = skill.scope === "system";
+              const isAgentCreated = skill.scope === "user" && skill.source?.kind === "skill-creator";
               const hasInstall = Boolean(install);
               const isInstalled = hasInstall || isBuiltin;
               const isRowLoading =
@@ -154,6 +155,14 @@ export function SkillsGrid({
                           ? t("library.skillsManager.scope.system")
                           : t("library.skillsManager.scope.user")}
                       </Badge>
+                      {isAgentCreated && (
+                        <Badge
+                          variant="secondary"
+                          className="text-xs"
+                        >
+                          {t("library.skillsManager.source.skillCreator")}
+                        </Badge>
+                      )}
                     </div>
                     {skill.description ? (
                       <p className="text-xs text-muted-foreground truncate mt-0.5">

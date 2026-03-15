@@ -1088,6 +1088,9 @@
         "user": "个人",
         "builtin": "内置"
       },
+      "source": {
+        "skillCreator": "Agent 创建"
+      },
       "fields": {
         "id": "id",
         "source": "来源"

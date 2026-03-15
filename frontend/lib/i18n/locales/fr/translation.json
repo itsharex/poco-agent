@@ -1058,7 +1058,11 @@
       },
       "scope": {
         "system": "Système",
-        "user": "Utilisateur"
+        "user": "Utilisateur",
+        "builtin": "Intégré"
+      },
+      "source": {
+        "skillCreator": "Créé par l'agent"
       },
       "fields": {
         "id": "id",

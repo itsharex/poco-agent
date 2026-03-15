@@ -1088,6 +1088,9 @@
         "user": "User",
         "builtin": "Built-in"
       },
+      "source": {
+        "skillCreator": "Created by agent"
+      },
       "fields": {
         "id": "id",
         "source": "Source"

@@ -1058,7 +1058,11 @@
       },
       "scope": {
         "system": "システム",
-        "user": "ユーザー"
+        "user": "ユーザー",
+        "builtin": "組み込み"
+      },
+      "source": {
+        "skillCreator": "Agent 作成"
       },
       "fields": {
         "id": "ID",
