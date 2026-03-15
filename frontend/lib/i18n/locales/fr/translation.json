@@ -480,6 +480,28 @@
         "structured": "Structured data",
         "empty": "No data"
       }
+    },
+    "skillCreationReview": {
+      "title": "Vérifier la compétence créée",
+      "subtitle": "L'agent a créé une compétence dans cette session. Vérifiez-la avant de l'enregistrer.",
+      "badge": "Créé par l'agent",
+      "nameLabel": "Nom de la compétence",
+      "descriptionLabel": "Description",
+      "emptyDescription": "Aucune description n'a été générée.",
+      "pathLabel": "Chemin de l’espace de travail",
+      "conflictWarning": "Une compétence portant ce nom existe déjà.",
+      "overwriteLabel": "Remplacer la compétence existante",
+      "filesTitle": "Fichiers générés",
+      "loadingFiles": "Chargement des fichiers générés…",
+      "emptyFiles": "Aucun fichier d’aperçu n’est encore disponible.",
+      "selectFile": "Sélectionnez un fichier à prévisualiser.",
+      "cancel": "Annuler",
+      "confirm": "Créer la compétence",
+      "confirmOverwrite": "Remplacer et créer",
+      "createSuccess": "Compétence créée",
+      "createFailed": "Échec de la création de la compétence",
+      "cancelSuccess": "Création de compétence ignorée",
+      "cancelFailed": "Impossible d’ignorer la création de compétence"
     }
   },
   "status": {
@@ -1191,7 +1213,8 @@
       "zip": "ZIP",
       "system": "Système",
       "manual": "Manuel",
-      "unknown": "Inconnu"
+      "unknown": "Inconnu",
+      "skillCreator": "Skill Creator"
     },
     "pluginsManager": {
       "toasts": {

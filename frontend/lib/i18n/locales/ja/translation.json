@@ -480,6 +480,28 @@
         "structured": "Structured data",
         "empty": "No data"
       }
+    },
+    "skillCreationReview": {
+      "title": "作成されたスキルを確認",
+      "subtitle": "このセッションでエージェントがスキルを作成しました。保存前に確認してください。",
+      "badge": "エージェント作成",
+      "nameLabel": "スキル名",
+      "descriptionLabel": "説明",
+      "emptyDescription": "説明は生成されませんでした。",
+      "pathLabel": "ワークスペースのパス",
+      "conflictWarning": "同じ名前のスキルが既に存在します。",
+      "overwriteLabel": "既存のスキルを上書きする",
+      "filesTitle": "生成されたファイル",
+      "loadingFiles": "生成されたファイルを読み込み中…",
+      "emptyFiles": "まだプレビューできるファイルはありません。",
+      "selectFile": "プレビューするファイルを選択してください。",
+      "cancel": "キャンセル",
+      "confirm": "スキルを作成",
+      "confirmOverwrite": "上書きして作成",
+      "createSuccess": "スキルを作成しました",
+      "createFailed": "スキルの作成に失敗しました",
+      "cancelSuccess": "スキル作成を取り消しました",
+      "cancelFailed": "スキル作成の取り消しに失敗しました"
     }
   },
   "status": {
@@ -1191,7 +1213,8 @@
       "zip": "ZIP",
       "system": "システム",
       "manual": "手動",
-      "unknown": "不明"
+      "unknown": "不明",
+      "skillCreator": "Skill Creator"
     },
     "pluginsManager": {
       "toasts": {

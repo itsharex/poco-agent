@@ -496,6 +496,28 @@
         "structured": "Structured data",
         "empty": "No data"
       }
+    },
+    "skillCreationReview": {
+      "title": "Review created skill",
+      "subtitle": "The agent created a skill in this session. Review it before saving.",
+      "badge": "Created by agent",
+      "nameLabel": "Skill name",
+      "descriptionLabel": "Description",
+      "emptyDescription": "No description was generated.",
+      "pathLabel": "Workspace path",
+      "conflictWarning": "A skill with this name already exists.",
+      "overwriteLabel": "Overwrite the existing skill",
+      "filesTitle": "Generated files",
+      "loadingFiles": "Loading generated files…",
+      "emptyFiles": "No preview files are available yet.",
+      "selectFile": "Select a file to preview it.",
+      "cancel": "Cancel",
+      "confirm": "Create skill",
+      "confirmOverwrite": "Overwrite & create",
+      "createSuccess": "Skill created",
+      "createFailed": "Failed to create skill",
+      "cancelSuccess": "Skill creation dismissed",
+      "cancelFailed": "Failed to dismiss skill creation"
     }
   },
   "status": {
@@ -1313,7 +1335,8 @@
       "zip": "ZIP",
       "system": "System",
       "manual": "Manual",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "skillCreator": "Skill Creator"
     },
     "presets": {
       "title": "Presets",

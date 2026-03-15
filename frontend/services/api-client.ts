@@ -108,6 +108,13 @@ export const API_ENDPOINTS = {
   skillImportDiscover: "/skills/import/discover",
   skillImportCommit: "/skills/import/commit",
   skillImportJob: (jobId: string) => `/skills/import/jobs/${jobId}`,
+  pendingSkillCreations: "/pending-skill-creations",
+  pendingSkillCreation: (creationId: string) =>
+    `/pending-skill-creations/${creationId}`,
+  pendingSkillCreationConfirm: (creationId: string) =>
+    `/pending-skill-creations/${creationId}/confirm`,
+  pendingSkillCreationCancel: (creationId: string) =>
+    `/pending-skill-creations/${creationId}/cancel`,
 
   // Skill Installs
   skillInstalls: "/skill-installs",

@@ -496,6 +496,28 @@
         "structured": "结构化数据",
         "empty": "无数据"
       }
+    },
+    "skillCreationReview": {
+      "title": "审查已创建技能",
+      "subtitle": "本次会话中智能体创建了一个技能，请先确认再保存。",
+      "badge": "智能体创建",
+      "nameLabel": "技能名称",
+      "descriptionLabel": "描述",
+      "emptyDescription": "未生成描述。",
+      "pathLabel": "工作区路径",
+      "conflictWarning": "已存在同名技能。",
+      "overwriteLabel": "覆盖已有技能",
+      "filesTitle": "生成的文件",
+      "loadingFiles": "正在加载生成文件…",
+      "emptyFiles": "暂时没有可预览的文件。",
+      "selectFile": "选择一个文件进行预览。",
+      "cancel": "取消",
+      "confirm": "创建技能",
+      "confirmOverwrite": "覆盖并创建",
+      "createSuccess": "技能已创建",
+      "createFailed": "创建技能失败",
+      "cancelSuccess": "已忽略本次技能创建",
+      "cancelFailed": "忽略技能创建失败"
     }
   },
   "status": {
@@ -1313,7 +1335,8 @@
       "zip": "ZIP",
       "system": "系统",
       "manual": "手动",
-      "unknown": "未知"
+      "unknown": "未知",
+      "skillCreator": "Skill Creator"
     },
     "presets": {
       "title": "预设",

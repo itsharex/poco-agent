@@ -93,6 +93,19 @@ class S3StorageService:
                 details={"key": key, "error": str(exc)},
             ) from exc
 
+    def get_text(self, key: str, *, encoding: str = "utf-8") -> str:
+        try:
+            response = self.client.get_object(Bucket=self.bucket, Key=key)
+            body = response["Body"].read()
+            return body.decode(encoding)
+        except (ClientError, BotoCoreError, UnicodeDecodeError) as exc:
+            logger.error(f"Failed to fetch text object {key}: {exc}")
+            raise AppException(
+                error_code=ErrorCode.EXTERNAL_SERVICE_ERROR,
+                message="Failed to fetch text object",
+                details={"key": key, "error": str(exc)},
+            ) from exc
+
     def presign_get(
         self,
         key: str,
@@ -352,6 +365,86 @@ class S3StorageService:
                     ) from exc
 
         return uploaded
+
+    def copy_prefix(
+        self,
+        *,
+        source_prefix: str,
+        destination_prefix: str,
+        delete_missing: bool = True,
+    ) -> int:
+        normalized_source = source_prefix.strip().rstrip("/")
+        normalized_destination = destination_prefix.strip().rstrip("/")
+        if not normalized_source or not normalized_destination:
+            raise AppException(
+                error_code=ErrorCode.BAD_REQUEST,
+                message="Source and destination prefixes cannot be empty",
+            )
+
+        normalized_source = f"{normalized_source}/"
+        normalized_destination = f"{normalized_destination}/"
+
+        copied = 0
+        desired_keys: set[str] = set()
+
+        try:
+            for source_key in self.list_objects(normalized_source):
+                if source_key.endswith("/"):
+                    continue
+                relative = source_key[len(normalized_source) :].lstrip("/")
+                if not relative:
+                    continue
+                destination_key = f"{normalized_destination}{relative}"
+                self.client.copy(
+                    {"Bucket": self.bucket, "Key": source_key},
+                    self.bucket,
+                    destination_key,
+                )
+                desired_keys.add(destination_key)
+                copied += 1
+        except (ClientError, BotoCoreError) as exc:
+            logger.error(
+                f"Failed to copy objects from {normalized_source} to {normalized_destination}: {exc}"
+            )
+            raise AppException(
+                error_code=ErrorCode.EXTERNAL_SERVICE_ERROR,
+                message="Failed to copy files",
+                details={
+                    "source_prefix": normalized_source,
+                    "destination_prefix": normalized_destination,
+                    "error": str(exc),
+                },
+            ) from exc
+
+        if delete_missing:
+            existing_keys = set(self.list_objects(normalized_destination))
+            stale_keys = existing_keys - desired_keys
+            if stale_keys:
+                stale_keys_list = sorted(stale_keys)
+                try:
+                    for start in range(0, len(stale_keys_list), 1000):
+                        chunk = stale_keys_list[start : start + 1000]
+                        self.client.delete_objects(
+                            Bucket=self.bucket,
+                            Delete={
+                                "Objects": [{"Key": key} for key in chunk],
+                                "Quiet": True,
+                            },
+                        )
+                except (ClientError, BotoCoreError) as exc:
+                    logger.error(
+                        f"Failed to delete stale copied objects under {normalized_destination}: {exc}"
+                    )
+                    raise AppException(
+                        error_code=ErrorCode.EXTERNAL_SERVICE_ERROR,
+                        message="Failed to copy files",
+                        details={
+                            "destination_prefix": normalized_destination,
+                            "error": str(exc),
+                        },
+                    ) from exc
+
+        return copied
 
     @staticmethod
     def _safe_destination(destination_dir: Path, relative: str) -> Path:

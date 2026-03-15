@@ -481,6 +481,28 @@
         "structured": "Structured data",
         "empty": "No data"
       }
+    },
+    "skillCreationReview": {
+      "title": "Erstellten Skill prüfen",
+      "subtitle": "Der Agent hat in dieser Sitzung einen Skill erstellt. Bitte vor dem Speichern prüfen.",
+      "badge": "Vom Agent erstellt",
+      "nameLabel": "Skill-Name",
+      "descriptionLabel": "Beschreibung",
+      "emptyDescription": "Es wurde keine Beschreibung erzeugt.",
+      "pathLabel": "Workspace-Pfad",
+      "conflictWarning": "Ein Skill mit diesem Namen existiert bereits.",
+      "overwriteLabel": "Vorhandenen Skill überschreiben",
+      "filesTitle": "Erzeugte Dateien",
+      "loadingFiles": "Erzeugte Dateien werden geladen…",
+      "emptyFiles": "Noch keine Vorschaudateien verfügbar.",
+      "selectFile": "Wähle eine Datei zur Vorschau aus.",
+      "cancel": "Abbrechen",
+      "confirm": "Skill erstellen",
+      "confirmOverwrite": "Überschreiben und erstellen",
+      "createSuccess": "Skill erstellt",
+      "createFailed": "Skill konnte nicht erstellt werden",
+      "cancelSuccess": "Skill-Erstellung verworfen",
+      "cancelFailed": "Skill-Erstellung konnte nicht verworfen werden"
     }
   },
   "status": {
@@ -1195,7 +1217,8 @@
       "zip": "ZIP",
       "system": "System",
       "manual": "Manuell",
-      "unknown": "Unbekannt"
+      "unknown": "Unbekannt",
+      "skillCreator": "Skill Creator"
     },
     "pluginsManager": {
       "toasts": {

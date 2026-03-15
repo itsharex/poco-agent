@@ -17,6 +17,7 @@ import { PendingMessageList } from "./pending-message-list";
 import { ChatInput, type ChatInputRef } from "./chat-input";
 import { UserInputRequestCard } from "./user-input-request-card";
 import { PlanApprovalCard } from "./plan-approval-card";
+import { SkillCreationReviewCard } from "./skill-creation-review-card";
 import {
   PanelHeader,
   PanelHeaderAction,
@@ -24,6 +25,7 @@ import {
 import { useChatMessages } from "./hooks/use-chat-messages";
 import { usePendingMessages } from "./hooks/use-pending-messages";
 import { useUserInputRequests } from "./hooks/use-user-input-requests";
+import { usePendingSkillCreations } from "./hooks/use-pending-skill-creations";
 import {
   branchSessionAction,
   cancelSessionAction,
@@ -217,6 +219,15 @@ export function ChatPanel({
   } = useUserInputRequests(
     session?.session_id,
     Boolean(session?.session_id) && isSessionActive,
+  );
+  const {
+    activeCreation: pendingSkillCreation,
+    isSubmitting: isSubmittingPendingSkillCreation,
+    confirmCreation: confirmPendingSkillCreation,
+    cancelCreation: cancelPendingSkillCreation,
+  } = usePendingSkillCreations(
+    session?.session_id,
+    Boolean(session?.session_id) && session?.status === "completed",
   );
 
   const activeUserInput = userInputRequests[0];
@@ -1163,6 +1174,19 @@ export function ChatPanel({
               }
             />
           ) : null}
+        </div>
+      ) : null}
+
+      {pendingSkillCreation ? (
+        <div className={cn("pb-3", contentPaddingClass)}>
+          <SkillCreationReviewCard
+            creation={pendingSkillCreation}
+            isSubmitting={isSubmittingPendingSkillCreation}
+            onConfirm={(payload) =>
+              confirmPendingSkillCreation(pendingSkillCreation.id, payload)
+            }
+            onCancel={() => cancelPendingSkillCreation(pendingSkillCreation.id)}
+          />
         </div>
       ) : null}
 
