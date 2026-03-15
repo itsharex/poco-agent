@@ -122,11 +122,21 @@ class WorkspaceExportService:
             dirnames[:] = [
                 d
                 for d in dirnames
-                if not self._should_skip(root_path / d, ignore_names, ignore_dot)
+                if not self._should_skip(
+                    root_path / d,
+                    workspace_dir=workspace_dir,
+                    ignore_names=ignore_names,
+                    ignore_dot=ignore_dot,
+                )
             ]
             for filename in filenames:
                 file_path = root_path / filename
-                if self._should_skip(file_path, ignore_names, ignore_dot):
+                if self._should_skip(
+                    file_path,
+                    workspace_dir=workspace_dir,
+                    ignore_names=ignore_names,
+                    ignore_dot=ignore_dot,
+                ):
                     continue
                 if file_path.is_symlink():
                     continue
@@ -159,12 +169,35 @@ class WorkspaceExportService:
         return archive_path
 
     @staticmethod
-    def _should_skip(path: Path, ignore_names: set[str], ignore_dot: bool) -> bool:
+    def _is_allowed_hidden_skill_path(path: Path, workspace_dir: Path) -> bool:
+        try:
+            relative_parts = path.relative_to(workspace_dir).parts
+        except Exception:
+            return False
+
+        if not relative_parts:
+            return False
+        if relative_parts[0] not in {".config", ".config_data"}:
+            return False
+        if len(relative_parts) == 1:
+            return True
+        return relative_parts[1] == "skills"
+
+    @classmethod
+    def _should_skip(
+        cls,
+        path: Path,
+        *,
+        workspace_dir: Path,
+        ignore_names: set[str],
+        ignore_dot: bool,
+    ) -> bool:
         name = path.name
         if name in ignore_names:
             return True
         if ignore_dot and name.startswith("."):
-            return True
+            if not cls._is_allowed_hidden_skill_path(path, workspace_dir):
+                return True
         if path.is_symlink():
             return True
         return False
